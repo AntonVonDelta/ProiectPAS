@@ -446,3 +446,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dotPrefab: {fileID: 8389978164811909350, guid: e5ffbcfdda6ab2147afc598819c5cc37, type: 3}
+  dotsPerUnit: 10
+  threshold: 0
+  slider: {fileID: 0}
