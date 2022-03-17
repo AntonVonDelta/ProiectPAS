@@ -334,38 +334,38 @@ public class MarchingCubes {
             interpolatedVertexes[0] = InterpolateVertexOnEdge(ref gridcell,0,1);
         }
         if ((intersectedEdges & 2) != 0) {
-            interpolatedVertexes[0] = InterpolateVertexOnEdge(ref gridcell, 2, 1);
+            interpolatedVertexes[1] = InterpolateVertexOnEdge(ref gridcell, 2, 1);
         }
         if ((intersectedEdges & 4) != 0) {
-            interpolatedVertexes[0] = InterpolateVertexOnEdge(ref gridcell, 2, 3);
+            interpolatedVertexes[2] = InterpolateVertexOnEdge(ref gridcell, 2, 3);
         }
         if ((intersectedEdges & 8) != 0) {
-            interpolatedVertexes[0] = InterpolateVertexOnEdge(ref gridcell, 3, 0);
+            interpolatedVertexes[3] = InterpolateVertexOnEdge(ref gridcell, 3, 0);
         }
         if ((intersectedEdges & 16) != 0) {
-            interpolatedVertexes[0] = InterpolateVertexOnEdge(ref gridcell, 4, 5);
+            interpolatedVertexes[4] = InterpolateVertexOnEdge(ref gridcell, 4, 5);
         }
         if ((intersectedEdges & 32) != 0) {
-            interpolatedVertexes[0] = InterpolateVertexOnEdge(ref gridcell, 5, 6);
+            interpolatedVertexes[5] = InterpolateVertexOnEdge(ref gridcell, 5, 6);
         }
         if ((intersectedEdges & 64) != 0) {
-            interpolatedVertexes[0] = InterpolateVertexOnEdge(ref gridcell, 6, 7);
+            interpolatedVertexes[6] = InterpolateVertexOnEdge(ref gridcell, 6, 7);
         }
         if ((intersectedEdges & 128) != 0) {
-            interpolatedVertexes[0] = InterpolateVertexOnEdge(ref gridcell, 7, 4);
+            interpolatedVertexes[7] = InterpolateVertexOnEdge(ref gridcell, 7, 4);
         }
         
         if ((intersectedEdges & 256) != 0) {
-            interpolatedVertexes[0] = InterpolateVertexOnEdge(ref gridcell, 0, 4);
+            interpolatedVertexes[8] = InterpolateVertexOnEdge(ref gridcell, 0, 4);
         }
         if ((intersectedEdges & 512) != 0) {
-            interpolatedVertexes[0] = InterpolateVertexOnEdge(ref gridcell, 1, 5);
+            interpolatedVertexes[9] = InterpolateVertexOnEdge(ref gridcell, 1, 5);
         }
         if ((intersectedEdges & 1024) != 0) {
-            interpolatedVertexes[0] = InterpolateVertexOnEdge(ref gridcell, 2, 6);
+            interpolatedVertexes[10] = InterpolateVertexOnEdge(ref gridcell, 2, 6);
         }
         if ((intersectedEdges & 2048) != 0) {
-            interpolatedVertexes[0] = InterpolateVertexOnEdge(ref gridcell, 3, 7);
+            interpolatedVertexes[11] = InterpolateVertexOnEdge(ref gridcell, 3, 7);
         }
 
 

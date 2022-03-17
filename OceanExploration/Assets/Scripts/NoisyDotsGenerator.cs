@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class NoisyDotsGenerator : MonoBehaviour {
     public GameObject dotPrefab;
     public int dotsPerUnit = 10;
-    public float threshold = 0.2f;
+    private float threshold = 0.5f;
     private float prevThreshold;
 
     Mesh mesh;
@@ -17,6 +17,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
 
     // Start is called before the first frame update
     void Start() {
+        mesh = new Mesh();
         prevThreshold = threshold;
         GetComponent<MeshFilter>().mesh = mesh;
 
@@ -34,7 +35,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
     }
 
     void UpdateMesh() {
-        Vector3 dotsPerAxis = transform.localScale * dotsPerUnit;
+        Vector3Int dotsPerAxis = Vector3Int.RoundToInt(transform.localScale * dotsPerUnit);
         Vector3 dotDistance = new Vector3(transform.localScale.x / (dotsPerAxis.x - 1), transform.localScale.y / (dotsPerAxis.y - 1), transform.localScale.z / (dotsPerAxis.z - 1));
         Vector3 cubeCornerOffset = transform.position - transform.localScale / 2;
 
@@ -50,8 +51,19 @@ public class NoisyDotsGenerator : MonoBehaviour {
                     //pos.Scale(dotDistance);
                     //pos += cubeCornerOffset;
 
-                    //float scaleValue = (float)Random.Range(0,10000)/10000/5;
-                    float scaleValue = Perlin.Noise(pos.x * 2, pos.y * 2, pos.z * 2) / 2 + 0.5f;   // map from -1,1 to 0,1
+
+                    GameObject newDot = null;
+                    Vector3 worldPos = GetPointPosition(pos + new Vector3(0, 0, 1), dotDistance, cubeCornerOffset);
+                    if (availableObjects.Count != 0) {
+                        newDot = availableObjects.Pop();
+                    } else {
+                        newDot = Instantiate(dotPrefab, worldPos, Quaternion.identity);
+                        cachedObjects.Add(newDot);
+                    }
+
+                    newDot.transform.position = pos;
+                    newDot.transform.localScale = Vector3.one * GetPixelValue(worldPos);
+                    newDot.SetActive(true);
 
                     MarchingCubes.GRIDCELL gridCell;
                     gridCell.cornerPositions = new Vector3[8];
@@ -74,8 +86,9 @@ public class NoisyDotsGenerator : MonoBehaviour {
                     }
 
                     var surfaceTriangles = MarchingCubes.GetSurface(gridCell);
-                    int startingOffset = vertices.Count;
                     for (int i = 0; i < surfaceTriangles.Count; i++) {
+                        int startingOffset = vertices.Count;
+
                         vertices.Add(surfaceTriangles[i].corners[0]);
                         vertices.Add(surfaceTriangles[i].corners[1]);
                         vertices.Add(surfaceTriangles[i].corners[2]);
@@ -88,9 +101,20 @@ public class NoisyDotsGenerator : MonoBehaviour {
             }
         }
 
+        //Vector3[] vertices1 = new Vector3[] {
+        //    new Vector3(0,0,0),
+        //    new Vector3(0,0,1),
+        //    new Vector3(1,0,0),
+        //};
+
+        //int[] triangles1 = new int[] {
+        //    0,1,2,
+        //};
+
         mesh.Clear();
         mesh.vertices = vertices.ToArray();
         mesh.triangles = triangles.ToArray();
+        mesh.RecalculateNormals();
     }
 
     Vector3 GetPointPosition(Vector3 integerIndex, Vector3 dotDistance, Vector3 cubeCornerOffset) {
