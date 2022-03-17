@@ -9,6 +9,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
     public float threshold = 0.2f;
     private float prevThreshold;
 
+    Mesh mesh;
     List<GameObject> cachedObjects = new List<GameObject>();
 
 
@@ -17,7 +18,10 @@ public class NoisyDotsGenerator : MonoBehaviour {
     // Start is called before the first frame update
     void Start() {
         prevThreshold = threshold;
-        DrawDots();
+        GetComponent<MeshFilter>().mesh = mesh;
+
+        UpdateMesh();
+        //DrawDots();
     }
 
     // Update is called once per frame
@@ -25,8 +29,79 @@ public class NoisyDotsGenerator : MonoBehaviour {
         if (threshold != prevThreshold) {
             prevThreshold = threshold;
 
-            ThresholdDots();
+            //ThresholdDots();
         }
+    }
+
+    void UpdateMesh() {
+        Vector3 dotsPerAxis = transform.localScale * dotsPerUnit;
+        Vector3 dotDistance = new Vector3(transform.localScale.x / (dotsPerAxis.x - 1), transform.localScale.y / (dotsPerAxis.y - 1), transform.localScale.z / (dotsPerAxis.z - 1));
+        Vector3 cubeCornerOffset = transform.position - transform.localScale / 2;
+
+        Stack<GameObject> availableObjects = new Stack<GameObject>(cachedObjects);
+
+        List<Vector3> vertices = new List<Vector3>();
+        List<int> triangles = new List<int>();
+
+        for (int z = 0; z < dotsPerAxis.z - 1; z++) {
+            for (int y = 0; y < dotsPerAxis.y - 1; y++) {
+                for (int x = 0; x < dotsPerAxis.x - 1; x++) {
+                    Vector3 pos = new Vector3(x, y, z);
+                    //pos.Scale(dotDistance);
+                    //pos += cubeCornerOffset;
+
+                    //float scaleValue = (float)Random.Range(0,10000)/10000/5;
+                    float scaleValue = Perlin.Noise(pos.x * 2, pos.y * 2, pos.z * 2) / 2 + 0.5f;   // map from -1,1 to 0,1
+
+                    MarchingCubes.GRIDCELL gridCell;
+                    gridCell.cornerPositions = new Vector3[8];
+                    gridCell.cornerValues = new float[8];
+                    gridCell.surfaceValue = threshold;
+
+
+                    gridCell.cornerPositions[0] = GetPointPosition(pos + new Vector3(0, 0, 1), dotDistance, cubeCornerOffset);
+                    gridCell.cornerPositions[1] = GetPointPosition(pos + new Vector3(1, 0, 1), dotDistance, cubeCornerOffset);
+                    gridCell.cornerPositions[2] = GetPointPosition(pos + new Vector3(1, 0, 0), dotDistance, cubeCornerOffset);
+                    gridCell.cornerPositions[3] = GetPointPosition(pos + new Vector3(0, 0, 0), dotDistance, cubeCornerOffset);
+
+                    gridCell.cornerPositions[4] = GetPointPosition(pos + new Vector3(0, 1, 1), dotDistance, cubeCornerOffset);
+                    gridCell.cornerPositions[5] = GetPointPosition(pos + new Vector3(1, 1, 1), dotDistance, cubeCornerOffset);
+                    gridCell.cornerPositions[6] = GetPointPosition(pos + new Vector3(1, 1, 0), dotDistance, cubeCornerOffset);
+                    gridCell.cornerPositions[7] = GetPointPosition(pos + new Vector3(0, 1, 0), dotDistance, cubeCornerOffset);
+
+                    for (int i = 0; i < 8; i++) {
+                        gridCell.cornerValues[i] = GetPixelValue(gridCell.cornerPositions[i]);
+                    }
+
+                    var surfaceTriangles = MarchingCubes.GetSurface(gridCell);
+                    int startingOffset = vertices.Count;
+                    for (int i = 0; i < surfaceTriangles.Count; i++) {
+                        vertices.Add(surfaceTriangles[i].corners[0]);
+                        vertices.Add(surfaceTriangles[i].corners[1]);
+                        vertices.Add(surfaceTriangles[i].corners[2]);
+
+                        triangles.Add(startingOffset);
+                        triangles.Add(startingOffset + 1);
+                        triangles.Add(startingOffset + 2);
+                    }
+                }
+            }
+        }
+
+        mesh.Clear();
+        mesh.vertices = vertices.ToArray();
+        mesh.triangles = triangles.ToArray();
+    }
+
+    Vector3 GetPointPosition(Vector3 integerIndex, Vector3 dotDistance, Vector3 cubeCornerOffset) {
+        integerIndex.Scale(dotDistance);
+        integerIndex += cubeCornerOffset;
+        return integerIndex;
+    }
+
+    // Get noise in 3D position
+    float GetPixelValue(Vector3 pos) {
+        return Perlin.Noise(pos.x * 2, pos.y * 2, pos.z * 2) / 2 + 0.5f;
     }
 
 
