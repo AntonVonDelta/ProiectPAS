@@ -49,7 +49,8 @@ public class MarchingCubes {
         0xf00, 0xe09, 0xd03, 0xc0a, 0xb06, 0xa0f, 0x905, 0x80c,
         0x70c, 0x605, 0x50f, 0x406, 0x30a, 0x203, 0x109, 0x0   };
 
-    static int[,] triTable = {{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
+    // Returns the edges of every triangle needed to create the faces. There are 5 possible triangles * 3 edges=15
+    static int[,] facetsTable = {{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
         {0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
         {0, 1, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
         {1, 8, 3, 9, 8, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
@@ -369,7 +370,18 @@ public class MarchingCubes {
 
 
 
+        for(int i = 0; i < 15; i+=3) {
+            if (facetsTable[edgeTableIndex,i] == -1) break;
 
+            Triangle t;
+            t.corners = new Vector3[3];
+            t.corners[0] = interpolatedVertexes[facetsTable[edgeTableIndex, i]];
+            t.corners[1] = interpolatedVertexes[facetsTable[edgeTableIndex, i+1]];
+            t.corners[2] = interpolatedVertexes[facetsTable[edgeTableIndex, i+2]];
+            result.Add(t);
+        }
+
+        return result;
     }
 
     static private Vector3 InterpolateVertexOnEdge(ref GRIDCELL gridcell,int vertexIndex1,int vertexIndex2) {
