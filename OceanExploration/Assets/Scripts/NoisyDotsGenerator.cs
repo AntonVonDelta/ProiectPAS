@@ -11,6 +11,9 @@ public class NoisyDotsGenerator : MonoBehaviour {
 
     List<GameObject> cachedObjects = new List<GameObject>();
 
+
+
+
     // Start is called before the first frame update
     void Start() {
         prevThreshold = threshold;
@@ -19,7 +22,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
-        if (threshold!=prevThreshold) {
+        if (threshold != prevThreshold) {
             prevThreshold = threshold;
 
             ThresholdDots();
@@ -32,7 +35,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
         Vector3 dotDistance = new Vector3(transform.localScale.x / (dotsPerAxis.x - 1), transform.localScale.y / (dotsPerAxis.y - 1), transform.localScale.z / (dotsPerAxis.z - 1));
         Vector3 cubeCornerOffset = transform.position - transform.localScale / 2;
 
-        Stack<GameObject> availableObjects=new Stack<GameObject>(cachedObjects);
+        Stack<GameObject> availableObjects = new Stack<GameObject>(cachedObjects);
 
         for (int z = 0; z < dotsPerAxis.z; z++) {
             for (int y = 0; y < dotsPerAxis.y; y++) {
@@ -41,8 +44,8 @@ public class NoisyDotsGenerator : MonoBehaviour {
                     pos.Scale(dotDistance);
                     pos += cubeCornerOffset;
 
-                    float scaleValue = (float)Random.Range(0,10000)/10000/5;
-                    //float scaleValue= Mathf.Clamp( Perlin.Noise(pos.x, pos.y, pos.z) / 5, 0,1);
+                    //float scaleValue = (float)Random.Range(0,10000)/10000/5;
+                    float scaleValue = Perlin.Noise(pos.x * 2, pos.y * 2, pos.z * 2) / 2 + 0.5f;   // map from -1,1 to 0,1
 
                     GameObject newDot = null;
                     if (availableObjects.Count != 0) {
@@ -67,10 +70,10 @@ public class NoisyDotsGenerator : MonoBehaviour {
 
         Stack<GameObject> availableObjects = new Stack<GameObject>(cachedObjects);
 
-        foreach(GameObject obj in cachedObjects) {
+        foreach (GameObject obj in cachedObjects) {
             if (obj.transform.localScale.x < threshold) obj.SetActive(false);
             else obj.SetActive(true);
         }
-            
+
     }
 }
