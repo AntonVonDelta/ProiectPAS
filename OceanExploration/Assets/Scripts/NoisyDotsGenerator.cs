@@ -48,22 +48,19 @@ public class NoisyDotsGenerator : MonoBehaviour {
             for (int y = 0; y < dotsPerAxis.y - 1; y++) {
                 for (int x = 0; x < dotsPerAxis.x - 1; x++) {
                     Vector3 pos = new Vector3(x, y, z);
-                    //pos.Scale(dotDistance);
-                    //pos += cubeCornerOffset;
 
+                    //GameObject newDot = null;
+                    //Vector3 worldPos = GetPointPosition(pos + new Vector3(0, 0, 1), dotDistance, cubeCornerOffset);
+                    //if (availableObjects.Count != 0) {
+                    //    newDot = availableObjects.Pop();
+                    //} else {
+                    //    newDot = Instantiate(dotPrefab, worldPos, Quaternion.identity);
+                    //    cachedObjects.Add(newDot);
+                    //}
 
-                    GameObject newDot = null;
-                    Vector3 worldPos = GetPointPosition(pos + new Vector3(0, 0, 1), dotDistance, cubeCornerOffset);
-                    if (availableObjects.Count != 0) {
-                        newDot = availableObjects.Pop();
-                    } else {
-                        newDot = Instantiate(dotPrefab, worldPos, Quaternion.identity);
-                        cachedObjects.Add(newDot);
-                    }
-
-                    newDot.transform.position = pos;
-                    newDot.transform.localScale = Vector3.one * GetPixelValue(worldPos);
-                    newDot.SetActive(true);
+                    //newDot.transform.position = worldPos;
+                    //newDot.transform.localScale = Vector3.one * GetPixelValue(worldPos);
+                    //newDot.SetActive(true);
 
                     MarchingCubes.GRIDCELL gridCell;
                     gridCell.cornerPositions = new Vector3[8];
