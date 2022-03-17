@@ -21,6 +21,9 @@ public class NoisyDotsGenerator : MonoBehaviour {
         prevThreshold = threshold;
         GetComponent<MeshFilter>().mesh = mesh;
 
+        Random.InitState(10);
+
+
         UpdateMesh();
         //DrawDots();
     }
@@ -49,18 +52,21 @@ public class NoisyDotsGenerator : MonoBehaviour {
                 for (int x = 0; x < dotsPerAxis.x - 1; x++) {
                     Vector3 pos = new Vector3(x, y, z);
 
-                    //GameObject newDot = null;
-                    //Vector3 worldPos = GetPointPosition(pos + new Vector3(0, 0, 1), dotDistance, cubeCornerOffset);
-                    //if (availableObjects.Count != 0) {
-                    //    newDot = availableObjects.Pop();
-                    //} else {
-                    //    newDot = Instantiate(dotPrefab, worldPos, Quaternion.identity);
-                    //    cachedObjects.Add(newDot);
-                    //}
-
-                    //newDot.transform.position = worldPos;
-                    //newDot.transform.localScale = Vector3.one * GetPixelValue(worldPos);
-                    //newDot.SetActive(true);
+                    GameObject newDot = null;
+                    Vector3 worldPos = GetPointPosition(pos + new Vector3(0, 0, 1), dotDistance, cubeCornerOffset);
+                    if (availableObjects.Count != 0) {
+                        newDot = availableObjects.Pop();
+                    } else {
+                        newDot = Instantiate(dotPrefab, worldPos, Quaternion.identity);
+                        cachedObjects.Add(newDot);
+                    }
+                    newDot.transform.position = worldPos;
+                    newDot.transform.localScale = Vector3.one/2;
+                    if (GetPixelValue(worldPos) > 0) {
+                        newDot.SetActive(true);
+                    } else {
+                        newDot.SetActive(true);
+                    }
 
                     MarchingCubes.GRIDCELL gridCell;
                     gridCell.cornerPositions = new Vector3[8];
@@ -79,7 +85,8 @@ public class NoisyDotsGenerator : MonoBehaviour {
                     gridCell.cornerPositions[7] = GetPointPosition(pos + new Vector3(0, 1, 0), dotDistance, cubeCornerOffset);
 
                     for (int i = 0; i < 8; i++) {
-                        gridCell.cornerValues[i] = GetPixelValue(gridCell.cornerPositions[i]);
+                        if (i == 3 || i==2 || i==0) gridCell.cornerValues[i] = 1;
+                        else gridCell.cornerValues[i] = GetPixelValue(gridCell.cornerPositions[i]);
                     }
 
                     var surfaceTriangles = MarchingCubes.GetSurface(gridCell);
@@ -91,8 +98,8 @@ public class NoisyDotsGenerator : MonoBehaviour {
                         vertices.Add(surfaceTriangles[i].corners[2]);
 
                         triangles.Add(startingOffset);
-                        triangles.Add(startingOffset + 1);
                         triangles.Add(startingOffset + 2);
+                        triangles.Add(startingOffset + 1);
                     }
                 }
             }
@@ -122,8 +129,11 @@ public class NoisyDotsGenerator : MonoBehaviour {
 
     // Get noise in 3D position
     float GetPixelValue(Vector3 pos) {
-        return Perlin.Noise(pos.x * 2, pos.y * 2, pos.z * 2) / 2 + 0.5f;
+        //if (pos.y < 0) return threshold+Random.value/1;
+        return 0;
+        //return Perlin.Noise(pos.x * 2, pos.y * 2, pos.z * 2) / 2 + 0.5f;
     }
+
 
 
     void DrawDots() {
