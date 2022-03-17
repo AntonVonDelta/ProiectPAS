@@ -14,13 +14,15 @@ public class NoisyDotsGenerator : MonoBehaviour {
     // Start is called before the first frame update
     void Start() {
         prevThreshold = threshold;
+        DrawDots();
     }
 
     // Update is called once per frame
     void Update() {
         if (threshold!=prevThreshold) {
             prevThreshold = threshold;
-            DrawDots();
+
+            ThresholdDots();
         }
     }
 
@@ -39,8 +41,8 @@ public class NoisyDotsGenerator : MonoBehaviour {
                     pos.Scale(dotDistance);
                     pos += cubeCornerOffset;
 
-                    float scaleValue = Perlin.Noise(pos.x, pos.y, pos.z) / 5;
-                    if (scaleValue < threshold) continue;
+                    float scaleValue = (float)Random.Range(0,10000)/10000/5;
+                    //float scaleValue= Mathf.Clamp( Perlin.Noise(pos.x, pos.y, pos.z) / 5, 0,1);
 
                     GameObject newDot = null;
                     if (availableObjects.Count != 0) {
@@ -52,8 +54,23 @@ public class NoisyDotsGenerator : MonoBehaviour {
 
                     newDot.transform.position = pos;
                     newDot.transform.localScale = Vector3.one * scaleValue;
+                    newDot.SetActive(true);
                 }
             }
         }
+    }
+
+    void ThresholdDots() {
+        Vector3 dotsPerAxis = transform.localScale * dotsPerUnit;
+        Vector3 dotDistance = new Vector3(transform.localScale.x / (dotsPerAxis.x - 1), transform.localScale.y / (dotsPerAxis.y - 1), transform.localScale.z / (dotsPerAxis.z - 1));
+        Vector3 cubeCornerOffset = transform.position - transform.localScale / 2;
+
+        Stack<GameObject> availableObjects = new Stack<GameObject>(cachedObjects);
+
+        foreach(GameObject obj in cachedObjects) {
+            if (obj.transform.localScale.x < threshold) obj.SetActive(false);
+            else obj.SetActive(true);
+        }
+            
     }
 }
