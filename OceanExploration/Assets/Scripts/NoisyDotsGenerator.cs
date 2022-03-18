@@ -9,10 +9,11 @@ public class NoisyDotsGenerator : MonoBehaviour {
     public Vector3 scale = new Vector3(1, 1, 1);
     public bool addMarginsInside = true;
     public bool showGizmo = false;
-
     public float threshold = 0.5f;
-    private float prevThreshold;
+    public float perlinNoiseScale = 1;
 
+    private float prevThreshold;
+    private float prevPerlinNoiseScale;
     Mesh mesh;
     List<GameObject> cachedObjects = new List<GameObject>();
 
@@ -23,6 +24,8 @@ public class NoisyDotsGenerator : MonoBehaviour {
     void Start() {
         mesh = new Mesh();
         prevThreshold = threshold;
+        prevPerlinNoiseScale = perlinNoiseScale;
+
         GetComponent<MeshFilter>().mesh = mesh;
 
 
@@ -31,8 +34,9 @@ public class NoisyDotsGenerator : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
-        if (threshold != prevThreshold) {
+        if (threshold != prevThreshold || perlinNoiseScale!= prevPerlinNoiseScale) {
             prevThreshold = threshold;
+            prevPerlinNoiseScale = perlinNoiseScale;
 
             UpdateMesh();
         }
@@ -83,7 +87,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
                     
                     for (int i = 0; i < 8; i++) {
                         // Check if the point lies on the cube itself and seal it off
-                        if (isPointOnCube(positions[i], dotsPerAxis)) gridCell.cornerValues[i] = 1;
+                        if (isPointOnCube(positions[i], dotsPerAxis)) gridCell.cornerValues[i] = 0;
                         else gridCell.cornerValues[i] = GetPixelValue(gridCell.cornerPositions[i]);
                     }
 
@@ -96,8 +100,8 @@ public class NoisyDotsGenerator : MonoBehaviour {
                         vertices.Add(surfaceTriangles[i].corners[2]);
 
                         triangles.Add(startingOffset);
-                        triangles.Add(startingOffset + 1);
                         triangles.Add(startingOffset + 2);
+                        triangles.Add(startingOffset + 1);
                     }
                 }
             }
@@ -128,7 +132,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
 
     // Get noise in 3D position
     float GetPixelValue(Vector3 pos) {
-        return Perlin.Noise(pos.x, pos.y, pos.z) / 2 + 0.5f;
+        return Perlin.Noise(pos.x* perlinNoiseScale, pos.y* perlinNoiseScale, pos.z* perlinNoiseScale) / 2 + 0.5f;
     }
 
 

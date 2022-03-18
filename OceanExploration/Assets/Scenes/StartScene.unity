@@ -492,4 +492,5 @@ MonoBehaviour:
   scale: {x: 10, y: 10, z: 10}
   addMarginsInside: 1
   showGizmo: 0
-  threshold: 0.97
+  threshold: 0.5
+  perlinNoiseScale: 0.26
