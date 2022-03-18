@@ -12,6 +12,8 @@ public class NoisyDotsGenerator : MonoBehaviour {
     public float threshold = 0.5f;
     public float perlinNoiseScale = 1;
 
+    public bool refresh = false;
+
     private float prevThreshold;
     private float prevPerlinNoiseScale;
     Mesh mesh;
@@ -27,16 +29,17 @@ public class NoisyDotsGenerator : MonoBehaviour {
         prevPerlinNoiseScale = perlinNoiseScale;
 
         GetComponent<MeshFilter>().mesh = mesh;
-
+        mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
 
         UpdateMesh();
     }
 
     // Update is called once per frame
     void Update() {
-        if (threshold != prevThreshold || perlinNoiseScale!= prevPerlinNoiseScale) {
+        if (threshold != prevThreshold || perlinNoiseScale != prevPerlinNoiseScale || refresh) {
             prevThreshold = threshold;
             prevPerlinNoiseScale = perlinNoiseScale;
+            refresh = false;
 
             UpdateMesh();
         }
@@ -50,7 +53,6 @@ public class NoisyDotsGenerator : MonoBehaviour {
 
         List<Vector3> vertices = new List<Vector3>();
         List<int> triangles = new List<int>();
-
         for (int z = 0; z < dotsPerAxis.z - 1; z++) {
             for (int y = 0; y < dotsPerAxis.y - 1; y++) {
                 for (int x = 0; x < dotsPerAxis.x - 1; x++) {
@@ -84,13 +86,12 @@ public class NoisyDotsGenerator : MonoBehaviour {
                     gridCell.cornerPositions[5] = GetPointPosition(positions[5], dotDistance, cubeCornerOffset);
                     gridCell.cornerPositions[6] = GetPointPosition(positions[6], dotDistance, cubeCornerOffset);
                     gridCell.cornerPositions[7] = GetPointPosition(positions[7], dotDistance, cubeCornerOffset);
-                    
+
                     for (int i = 0; i < 8; i++) {
                         // Check if the point lies on the cube itself and seal it off
                         if (isPointOnCube(positions[i], dotsPerAxis)) gridCell.cornerValues[i] = 0;
                         else gridCell.cornerValues[i] = GetPixelValue(gridCell.cornerPositions[i]);
                     }
-
                     var surfaceTriangles = MarchingCubes.GetSurface(gridCell);
                     for (int i = 0; i < surfaceTriangles.Count; i++) {
                         int startingOffset = vertices.Count;
@@ -114,7 +115,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
         mesh.RecalculateBounds();
     }
 
-    bool isPointOnCube(Vector3Int pos,Vector3Int maxIndexes) {
+    bool isPointOnCube(Vector3Int pos, Vector3Int maxIndexes) {
         if (pos.y == 0) return true;
         if (pos.z == 0) return true;
         if (pos.x == 0) return true;
@@ -132,15 +133,19 @@ public class NoisyDotsGenerator : MonoBehaviour {
 
     // Get noise in 3D position
     float GetPixelValue(Vector3 pos) {
-        return Perlin.Noise(pos.x* perlinNoiseScale, pos.y* perlinNoiseScale, pos.z* perlinNoiseScale) / 2 + 0.5f;
+        //return map(  (int)Mathf.Abs( pos.x * pos.z * 227)<<16 + (int)Mathf.Abs(pos.y * pos.y * 1213)<<8 + (int)Mathf.Abs(pos.z* 727),0, int.MaxValue,0, 1);
+        return Perlin.Noise(pos.x * perlinNoiseScale, pos.y * perlinNoiseScale, pos.z * perlinNoiseScale) / 2 + 0.5f;
+    }
+    public float map(float value, float from1, float to1, float from2, float to2) {
+        return (value - from1) / (to1 - from1) * (to2 - from2) + from2;
     }
 
 
     void OnDrawGizmosSelected() {
         // Draw a semitransparent blue cube at the transforms position
         Gizmos.color = new Color(1, 0, 0, 0.5f);
-        
-        if(showGizmo) Gizmos.DrawCube(transform.position, scale);
+
+        if (showGizmo) Gizmos.DrawCube(transform.position, scale);
     }
 
 
