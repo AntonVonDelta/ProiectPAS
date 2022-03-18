@@ -10,7 +10,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
     public bool addMarginsInside = true;
     public bool showGizmo = false;
 
-    private float threshold = 0.5f;
+    public float threshold = 0.5f;
     private float prevThreshold;
 
     Mesh mesh;
@@ -25,11 +25,8 @@ public class NoisyDotsGenerator : MonoBehaviour {
         prevThreshold = threshold;
         GetComponent<MeshFilter>().mesh = mesh;
 
-        Random.InitState(10);
-
 
         UpdateMesh();
-        //DrawDots();
     }
 
     // Update is called once per frame
@@ -37,7 +34,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
         if (threshold != prevThreshold) {
             prevThreshold = threshold;
 
-            //ThresholdDots();
+            UpdateMesh();
         }
     }
 
@@ -46,7 +43,6 @@ public class NoisyDotsGenerator : MonoBehaviour {
         Vector3 dotDistance = new Vector3(scale.x / (dotsPerAxis.x - 1), scale.y / (dotsPerAxis.y - 1), scale.z / (dotsPerAxis.z - 1));
         Vector3 cubeCornerOffset = transform.position - scale / 2;
 
-        Stack<GameObject> availableObjects = new Stack<GameObject>(cachedObjects);
 
         List<Vector3> vertices = new List<Vector3>();
         List<int> triangles = new List<int>();
@@ -54,50 +50,39 @@ public class NoisyDotsGenerator : MonoBehaviour {
         for (int z = 0; z < dotsPerAxis.z - 1; z++) {
             for (int y = 0; y < dotsPerAxis.y - 1; y++) {
                 for (int x = 0; x < dotsPerAxis.x - 1; x++) {
-                    Vector3Int pos = new Vector3Int(x, y, z);
-
-                    //GameObject newDot = null;
-                    //Vector3 worldPos = GetPointPosition(pos + new Vector3(0, 0, 1), dotDistance, cubeCornerOffset);
-                    //if (availableObjects.Count != 0) {
-                    //    newDot = availableObjects.Pop();
-                    //} else {
-                    //    newDot = Instantiate(dotPrefab, worldPos, Quaternion.identity);
-                    //    cachedObjects.Add(newDot);
-                    //}
-                    //newDot.transform.position = worldPos;
-                    //newDot.transform.localScale = Vector3.one/2;
-                    //if (GetPixelValue(worldPos) > 0) {
-                    //    newDot.SetActive(true);
-                    //} else {
-                    //    newDot.SetActive(true);
-                    //}
+                    Vector3Int indexes = new Vector3Int(x, y, z);
 
                     MarchingCubes.GRIDCELL gridCell;
                     gridCell.cornerPositions = new Vector3[8];
                     gridCell.cornerValues = new float[8];
                     gridCell.surfaceValue = threshold;
 
-
-                    gridCell.cornerPositions[0] = GetPointPosition(pos + new Vector3(0, 0, 1), dotDistance, cubeCornerOffset);
-                    gridCell.cornerPositions[1] = GetPointPosition(pos + new Vector3(1, 0, 1), dotDistance, cubeCornerOffset);
-                    gridCell.cornerPositions[2] = GetPointPosition(pos + new Vector3(1, 0, 0), dotDistance, cubeCornerOffset);
-                    gridCell.cornerPositions[3] = GetPointPosition(pos + new Vector3(0, 0, 0), dotDistance, cubeCornerOffset);
-
-                    gridCell.cornerPositions[4] = GetPointPosition(pos + new Vector3(0, 1, 1), dotDistance, cubeCornerOffset);
-                    gridCell.cornerPositions[5] = GetPointPosition(pos + new Vector3(1, 1, 1), dotDistance, cubeCornerOffset);
-                    gridCell.cornerPositions[6] = GetPointPosition(pos + new Vector3(1, 1, 0), dotDistance, cubeCornerOffset);
-                    gridCell.cornerPositions[7] = GetPointPosition(pos + new Vector3(0, 1, 0), dotDistance, cubeCornerOffset);
-                    Vector3Int[] positions = { 
-                        pos + new Vector3Int(0, 0, 1),
-                        pos + new Vector3Int(1, 0, 1),
-                        pos + new Vector3Int(1, 0, 0),
-                        pos + new Vector3Int(0, 0, 0),
-                        pos + new Vector3Int(0, 1, 1),
-                        pos + new Vector3Int(1, 1, 1),
-                        pos + new Vector3Int(1, 1, 0),
-                        pos + new Vector3Int(0, 1, 0)
+                    // Cube position shifts
+                    // This is necessary because the values: edges and vertexes stored in MArchingCube
+                    // are created using a cube with the 0 indexed vertex starting in the bottom-left-further point
+                    // Here's the data and the cube: http://paulbourke.net/geometry/polygonise/
+                    Vector3Int[] positions = {
+                        indexes + new Vector3Int(0, 0, 1),
+                        indexes + new Vector3Int(1, 0, 1),
+                        indexes + new Vector3Int(1, 0, 0),
+                        indexes + new Vector3Int(0, 0, 0),
+                        indexes + new Vector3Int(0, 1, 1),
+                        indexes + new Vector3Int(1, 1, 1),
+                        indexes + new Vector3Int(1, 1, 0),
+                        indexes + new Vector3Int(0, 1, 0)
                     };
+                    gridCell.cornerPositions[0] = GetPointPosition(positions[0], dotDistance, cubeCornerOffset);
+                    gridCell.cornerPositions[1] = GetPointPosition(positions[1], dotDistance, cubeCornerOffset);
+                    gridCell.cornerPositions[2] = GetPointPosition(positions[2], dotDistance, cubeCornerOffset);
+                    gridCell.cornerPositions[3] = GetPointPosition(positions[3], dotDistance, cubeCornerOffset);
+
+                    gridCell.cornerPositions[4] = GetPointPosition(positions[4], dotDistance, cubeCornerOffset);
+                    gridCell.cornerPositions[5] = GetPointPosition(positions[5], dotDistance, cubeCornerOffset);
+                    gridCell.cornerPositions[6] = GetPointPosition(positions[6], dotDistance, cubeCornerOffset);
+                    gridCell.cornerPositions[7] = GetPointPosition(positions[7], dotDistance, cubeCornerOffset);
+                    
                     for (int i = 0; i < 8; i++) {
+                        // Check if the point lies on the cube itself and seal it off
                         if (isPointOnCube(positions[i], dotsPerAxis)) gridCell.cornerValues[i] = 1;
                         else gridCell.cornerValues[i] = GetPixelValue(gridCell.cornerPositions[i]);
                     }
@@ -153,6 +138,8 @@ public class NoisyDotsGenerator : MonoBehaviour {
         
         if(showGizmo) Gizmos.DrawCube(transform.position, scale);
     }
+
+
 
     void DrawDots() {
         Vector3 dotsPerAxis = transform.localScale * dotsPerUnit;
