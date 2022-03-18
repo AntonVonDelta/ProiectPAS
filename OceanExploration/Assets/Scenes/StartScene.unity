@@ -487,10 +487,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e40bf5076197deb48a247c374c1c6476, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dotPrefab: {fileID: 8389978164811909350, guid: e5ffbcfdda6ab2147afc598819c5cc37, type: 3}
-  dotsPerUnit: 2
-  scale: {x: 1, y: 10, z: 10}
-  addMarginsInside: 1
+  dotsPerUnit: 4
+  scale: {x: 20, y: 20, z: 20}
   showGizmo: 0
   threshold: 0.5
   perlinNoiseScale: 0.26
+  refresh: 0
+  groundHeight: 0.2

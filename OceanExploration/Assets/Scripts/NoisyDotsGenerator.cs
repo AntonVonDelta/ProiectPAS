@@ -49,8 +49,12 @@ public class NoisyDotsGenerator : MonoBehaviour {
         // ALso the distance between them is really 1/dotsPerUnit
         Vector3Int dotsPerAxis = Vector3Int.RoundToInt(scale * dotsPerUnit);
         float dotDistance = (float)1 / dotsPerUnit;
-        Vector3 cubeCornerOffset = transform.position - scale / 2;
 
+        // Now this offset is calculated from the ZERO/ORIGIN position
+        // It is half of the scale in order to align the mesh with a cube which has the center in the origin
+        // Any position transformation done in the editor actually adds that offset to every vertex in the mesh
+        // So we MUST NOT add that offset ourselves and this is not what this variable is for.
+        Vector3 cubeCornerOffset = - scale / 2;     
 
         List<Vector3> vertices = new List<Vector3>();
         List<int> triangles = new List<int>();
@@ -90,12 +94,10 @@ public class NoisyDotsGenerator : MonoBehaviour {
 
                     for (int i = 0; i < 8; i++) {
                         // Check if the point lies on the cube itself and seal it off
-                        //if (isPointOnCube(positions[i], dotsPerAxis)) gridCell.cornerValues[i] = 0;
-                        //else
-                            gridCell.cornerValues[i] = GetPixelValue(gridCell.cornerPositions[i]);
+                        if (isPointOnCube(positions[i], dotsPerAxis)) gridCell.cornerValues[i] = 0;
+                        else gridCell.cornerValues[i] = GetPixelValue(gridCell.cornerPositions[i]);
                     }
 
-                    Vector3 originPointPos = GetPointPosition(indexes, dotDistance, cubeCornerOffset);
                     var surfaceTriangles = MarchingCubes.GetSurface(gridCell);
                     for (int i = 0; i < surfaceTriangles.Count; i++) {
                         int startingOffset = vertices.Count;
@@ -129,11 +131,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
         if (pos.x == maxIndexes.x - 1) return true;
         return false;
     }
-    Vector3 GetPointPosition(Vector3 integerIndex, float dotDistance, Vector3 cubeCornerOffset) {
-        integerIndex *= dotDistance;
-        integerIndex += cubeCornerOffset;
-        return integerIndex;
-    }
+    
 
     // Get noise in 3D position
     float GetPixelValue(Vector3 pos) {
