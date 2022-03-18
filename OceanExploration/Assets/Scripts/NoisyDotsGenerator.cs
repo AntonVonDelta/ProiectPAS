@@ -99,7 +99,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
                             // Sample the noise using the dots resolution aka their position
                             // More dots will lower 'dotDistance' and thus will increase the 
                             // number of samples taken for the same unit of noise
-                            gridCell.cornerValues[i] = GetPixelValue(gridCell.cornerPositions[i], dotDistance);
+                            gridCell.cornerValues[i] = GetPixelValue(gridCell.cornerPositions[i], dotDistance, dotsPerAxis);
                         }
                     }
 
@@ -141,10 +141,10 @@ public class NoisyDotsGenerator : MonoBehaviour {
         return transform.position - scale / 2 + index * dotDistance;
     }
     // Get noise in 3D position
-    float GetPixelValue(Vector3 pos, float dotDistance) {
+    float GetPixelValue(Vector3 pos, float dotDistance, Vector3Int dotsPerAxis) {
         if (pos.y < groundHeight) return 1;
-
-        return Perlin.Noise(pos.x * perlinNoiseScale, pos.y * perlinNoiseScale, pos.z * perlinNoiseScale) / 2 + 0.5f;
+        float value= Perlin.Noise(pos.x * perlinNoiseScale, pos.y * perlinNoiseScale, pos.z * perlinNoiseScale) / 2 + 0.5f;
+        return value * map(pos.y, 0, dotsPerAxis.y * dotDistance, 1, 0);
     }
     public float map(float value, float from1, float to1, float from2, float to2) {
         return (value - from1) / (to1 - from1) * (to2 - from2) + from2;
