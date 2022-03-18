@@ -5,12 +5,11 @@ using UnityEngine.UI;
 
 public class NoisyDotsGenerator : MonoBehaviour {
     public GameObject dotPrefab;
-    public int dotsPerUnit = 10;
+    public int dotsPerUnit = 1;
     public Vector3 scale = new Vector3(1, 1, 1);
-    public bool addMarginsInside = true;
     public bool showGizmo = false;
     public float threshold = 0.5f;
-    public float perlinNoiseScale = 1;
+    public float perlinNoiseScale = 0.26f;
 
     public bool refresh = false;
 
@@ -46,8 +45,11 @@ public class NoisyDotsGenerator : MonoBehaviour {
     }
 
     void UpdateMesh() {
+        // If we got 1 dots per unit and a scale of 2 then
+        // 0   1   (2)  we actualy only got dots 0 and 1 while 2 is part of the next chunk
+        // ALso the distance between them is really 1/dotsPerUnit
         Vector3Int dotsPerAxis = Vector3Int.RoundToInt(scale * dotsPerUnit);
-        Vector3 dotDistance = new Vector3(scale.x / (dotsPerAxis.x - 1), scale.y / (dotsPerAxis.y - 1), scale.z / (dotsPerAxis.z - 1));
+        Vector3 dotDistance = Vector3.one / dotsPerUnit;
         Vector3 cubeCornerOffset = transform.position - scale / 2;
 
 
