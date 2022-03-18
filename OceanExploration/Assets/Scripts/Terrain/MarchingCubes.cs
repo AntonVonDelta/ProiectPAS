@@ -400,10 +400,10 @@ public class MarchingCubes {
 
         if (p1Value > p2Value) {
             // Means p1 is inside the volume
-            return p1 + (p2 - p1) / (p2Value - p1Value) * (surfaceValue - p1Value);
+            return p1 + (p1 - p2) / (p1Value - p2Value) * Mathf.Clamp(surfaceValue - p1Value,0, p1Value - p2Value);
         }
 
         // Means p2 is inside the volume
-        return p2 + (p2 - p1) / (p2Value - p1Value) * (surfaceValue - p2Value);
+        return p2 + (p2 - p1) / (p2Value - p1Value) * Mathf.Clamp(surfaceValue - p2Value,0, p2Value - p1Value);
     }
 }

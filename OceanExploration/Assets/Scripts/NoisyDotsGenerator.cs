@@ -94,7 +94,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
 
                     for (int i = 0; i < 8; i++) {
                         // Check if the point lies on the cube itself and seal it off
-                        if (isPointOnCube(Vector3Int.FloorToInt(positions[i]), dotsPerAxis)) gridCell.cornerValues[i] = 0;
+                        if (isPointOnCube(Vector3Int.FloorToInt(positions[i]), dotsPerAxis)) gridCell.cornerValues[i] = threshold-1;
                         else {
                             // Sample the noise using the dots resolution aka their position
                             // More dots will lower 'dotDistance' and thus will increase the 
@@ -111,6 +111,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
                         vertices.Add(cubeCornerOffset + surfaceTriangles[i].corners[1]);
                         vertices.Add(cubeCornerOffset + surfaceTriangles[i].corners[2]);
 
+                        // Reverse order here for culling to work
                         triangles.Add(startingOffset);
                         triangles.Add(startingOffset + 2);
                         triangles.Add(startingOffset + 1);
@@ -142,9 +143,13 @@ public class NoisyDotsGenerator : MonoBehaviour {
     }
     // Get noise in 3D position
     float GetPixelValue(Vector3 pos, float dotDistance, Vector3Int dotsPerAxis) {
-        if (pos.y < groundHeight) return 1;
-        float value= Perlin.Noise(pos.x * perlinNoiseScale, pos.y * perlinNoiseScale, pos.z * perlinNoiseScale) / 2 + 0.5f;
-        return value * map(pos.y, 0, dotsPerAxis.y * dotDistance, 1, 0);
+        if (pos.y <= groundHeight) return 1;
+
+        float noise = Perlin.Noise(pos.x * perlinNoiseScale, pos.y * perlinNoiseScale, pos.z * perlinNoiseScale) / 2 + 0.5f;
+
+        return pos.y % 4  - pos.y + noise ;
+
+        return noise + noise * (pos.y % 4);//  map(pos.y, 0, dotsPerAxis.y * dotDistance, 1.5f, 0);
     }
     public float map(float value, float from1, float to1, float from2, float to2) {
         return (value - from1) / (to1 - from1) * (to2 - from2) + from2;
