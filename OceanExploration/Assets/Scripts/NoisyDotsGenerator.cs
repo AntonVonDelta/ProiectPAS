@@ -4,19 +4,18 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class NoisyDotsGenerator : MonoBehaviour {
-    public GameObject dotPrefab;
     public int dotsPerUnit = 1;
     public Vector3 scale = new Vector3(1, 1, 1);
     public bool showGizmo = false;
     public float threshold = 0.5f;
     public float perlinNoiseScale = 0.26f;
-
     public bool refresh = false;
+
+    public float groundHeight = 0.2f;
 
     private float prevThreshold;
     private float prevPerlinNoiseScale;
     Mesh mesh;
-    List<GameObject> cachedObjects = new List<GameObject>();
 
 
 
@@ -49,7 +48,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
         // 0   1   (2)  we actualy only got dots 0 and 1 while 2 is part of the next chunk
         // ALso the distance between them is really 1/dotsPerUnit
         Vector3Int dotsPerAxis = Vector3Int.RoundToInt(scale * dotsPerUnit);
-        Vector3 dotDistance = Vector3.one / dotsPerUnit;
+        float dotDistance = (float)1 / dotsPerUnit;
         Vector3 cubeCornerOffset = transform.position - scale / 2;
 
 
@@ -79,28 +78,31 @@ public class NoisyDotsGenerator : MonoBehaviour {
                         indexes + new Vector3Int(1, 1, 0),
                         indexes + new Vector3Int(0, 1, 0)
                     };
-                    gridCell.cornerPositions[0] = GetPointPosition(positions[0], dotDistance, cubeCornerOffset);
-                    gridCell.cornerPositions[1] = GetPointPosition(positions[1], dotDistance, cubeCornerOffset);
-                    gridCell.cornerPositions[2] = GetPointPosition(positions[2], dotDistance, cubeCornerOffset);
-                    gridCell.cornerPositions[3] = GetPointPosition(positions[3], dotDistance, cubeCornerOffset);
+                    gridCell.cornerPositions[0] = positions[0];
+                    gridCell.cornerPositions[1] = positions[1];
+                    gridCell.cornerPositions[2] = positions[2];
+                    gridCell.cornerPositions[3] = positions[3];
 
-                    gridCell.cornerPositions[4] = GetPointPosition(positions[4], dotDistance, cubeCornerOffset);
-                    gridCell.cornerPositions[5] = GetPointPosition(positions[5], dotDistance, cubeCornerOffset);
-                    gridCell.cornerPositions[6] = GetPointPosition(positions[6], dotDistance, cubeCornerOffset);
-                    gridCell.cornerPositions[7] = GetPointPosition(positions[7], dotDistance, cubeCornerOffset);
+                    gridCell.cornerPositions[4] = positions[4];
+                    gridCell.cornerPositions[5] = positions[5];
+                    gridCell.cornerPositions[6] = positions[6];
+                    gridCell.cornerPositions[7] = positions[7];
 
                     for (int i = 0; i < 8; i++) {
                         // Check if the point lies on the cube itself and seal it off
-                        if (isPointOnCube(positions[i], dotsPerAxis)) gridCell.cornerValues[i] = 0;
-                        else gridCell.cornerValues[i] = GetPixelValue(gridCell.cornerPositions[i]);
+                        //if (isPointOnCube(positions[i], dotsPerAxis)) gridCell.cornerValues[i] = 0;
+                        //else
+                            gridCell.cornerValues[i] = GetPixelValue(gridCell.cornerPositions[i]);
                     }
+
+                    Vector3 originPointPos = GetPointPosition(indexes, dotDistance, cubeCornerOffset);
                     var surfaceTriangles = MarchingCubes.GetSurface(gridCell);
                     for (int i = 0; i < surfaceTriangles.Count; i++) {
                         int startingOffset = vertices.Count;
 
-                        vertices.Add(surfaceTriangles[i].corners[0]);
-                        vertices.Add(surfaceTriangles[i].corners[1]);
-                        vertices.Add(surfaceTriangles[i].corners[2]);
+                        vertices.Add(cubeCornerOffset + surfaceTriangles[i].corners[0] * dotDistance);
+                        vertices.Add(cubeCornerOffset + surfaceTriangles[i].corners[1] * dotDistance);
+                        vertices.Add(cubeCornerOffset + surfaceTriangles[i].corners[2] * dotDistance);
 
                         triangles.Add(startingOffset);
                         triangles.Add(startingOffset + 2);
@@ -127,8 +129,8 @@ public class NoisyDotsGenerator : MonoBehaviour {
         if (pos.x == maxIndexes.x - 1) return true;
         return false;
     }
-    Vector3 GetPointPosition(Vector3 integerIndex, Vector3 dotDistance, Vector3 cubeCornerOffset) {
-        integerIndex.Scale(dotDistance);
+    Vector3 GetPointPosition(Vector3 integerIndex, float dotDistance, Vector3 cubeCornerOffset) {
+        integerIndex *= dotDistance;
         integerIndex += cubeCornerOffset;
         return integerIndex;
     }
@@ -136,6 +138,8 @@ public class NoisyDotsGenerator : MonoBehaviour {
     // Get noise in 3D position
     float GetPixelValue(Vector3 pos) {
         //return map(  (int)Mathf.Abs( pos.x * pos.z * 227)<<16 + (int)Mathf.Abs(pos.y * pos.y * 1213)<<8 + (int)Mathf.Abs(pos.z* 727),0, int.MaxValue,0, 1);
+
+        //if (pos.y < transform.position.y - scale.y + groundHeight) return 1;
         return Perlin.Noise(pos.x * perlinNoiseScale, pos.y * perlinNoiseScale, pos.z * perlinNoiseScale) / 2 + 0.5f;
     }
     public float map(float value, float from1, float to1, float from2, float to2) {
@@ -151,51 +155,4 @@ public class NoisyDotsGenerator : MonoBehaviour {
     }
 
 
-
-    void DrawDots() {
-        Vector3 dotsPerAxis = transform.localScale * dotsPerUnit;
-        Vector3 dotDistance = new Vector3(transform.localScale.x / (dotsPerAxis.x - 1), transform.localScale.y / (dotsPerAxis.y - 1), transform.localScale.z / (dotsPerAxis.z - 1));
-        Vector3 cubeCornerOffset = transform.position - transform.localScale / 2;
-
-        Stack<GameObject> availableObjects = new Stack<GameObject>(cachedObjects);
-
-        for (int z = 0; z < dotsPerAxis.z; z++) {
-            for (int y = 0; y < dotsPerAxis.y; y++) {
-                for (int x = 0; x < dotsPerAxis.x; x++) {
-                    Vector3 pos = new Vector3(x, y, z);
-                    pos.Scale(dotDistance);
-                    pos += cubeCornerOffset;
-
-                    //float scaleValue = (float)Random.Range(0,10000)/10000/5;
-                    float scaleValue = Perlin.Noise(pos.x * 2, pos.y * 2, pos.z * 2) / 2 + 0.5f;   // map from -1,1 to 0,1
-
-                    GameObject newDot = null;
-                    if (availableObjects.Count != 0) {
-                        newDot = availableObjects.Pop();
-                    } else {
-                        newDot = Instantiate(dotPrefab, pos, Quaternion.identity);
-                        cachedObjects.Add(newDot);
-                    }
-
-                    newDot.transform.position = pos;
-                    newDot.transform.localScale = Vector3.one * scaleValue;
-                    newDot.SetActive(true);
-                }
-            }
-        }
-    }
-
-    void ThresholdDots() {
-        Vector3 dotsPerAxis = transform.localScale * dotsPerUnit;
-        Vector3 dotDistance = new Vector3(transform.localScale.x / (dotsPerAxis.x - 1), transform.localScale.y / (dotsPerAxis.y - 1), transform.localScale.z / (dotsPerAxis.z - 1));
-        Vector3 cubeCornerOffset = transform.position - transform.localScale / 2;
-
-        Stack<GameObject> availableObjects = new Stack<GameObject>(cachedObjects);
-
-        foreach (GameObject obj in cachedObjects) {
-            if (obj.transform.localScale.x < threshold) obj.SetActive(false);
-            else obj.SetActive(true);
-        }
-
-    }
 }
