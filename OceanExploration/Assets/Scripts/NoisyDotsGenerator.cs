@@ -72,7 +72,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
                     // This is necessary because the values: edges and vertexes stored in MArchingCube
                     // are created using a cube with the 0 indexed vertex starting in the bottom-left-further point
                     // Here's the data and the cube: http://paulbourke.net/geometry/polygonise/
-                    Vector3Int[] positions = {
+                    Vector3[] positions = {
                         indexes + new Vector3Int(0, 0, 1),
                         indexes + new Vector3Int(1, 0, 1),
                         indexes + new Vector3Int(1, 0, 0),
@@ -82,26 +82,24 @@ public class NoisyDotsGenerator : MonoBehaviour {
                         indexes + new Vector3Int(1, 1, 0),
                         indexes + new Vector3Int(0, 1, 0)
                     };
-                    gridCell.cornerPositions[0] = positions[0];
-                    gridCell.cornerPositions[1] = positions[1];
-                    gridCell.cornerPositions[2] = positions[2];
-                    gridCell.cornerPositions[3] = positions[3];
+                    gridCell.cornerPositions[0] = positions[0] * dotDistance;
+                    gridCell.cornerPositions[1] = positions[1] * dotDistance;
+                    gridCell.cornerPositions[2] = positions[2] * dotDistance;
+                    gridCell.cornerPositions[3] = positions[3] * dotDistance;
 
-                    gridCell.cornerPositions[4] = positions[4];
-                    gridCell.cornerPositions[5] = positions[5];
-                    gridCell.cornerPositions[6] = positions[6];
-                    gridCell.cornerPositions[7] = positions[7];
+                    gridCell.cornerPositions[4] = positions[4] * dotDistance;
+                    gridCell.cornerPositions[5] = positions[5] * dotDistance;
+                    gridCell.cornerPositions[6] = positions[6] * dotDistance;
+                    gridCell.cornerPositions[7] = positions[7] * dotDistance;
 
                     for (int i = 0; i < 8; i++) {
                         // Check if the point lies on the cube itself and seal it off
-                        if (isPointOnCube(positions[i], dotsPerAxis)) gridCell.cornerValues[i] = 0;
+                        if (isPointOnCube(Vector3Int.FloorToInt(positions[i]), dotsPerAxis)) gridCell.cornerValues[i] = 0;
                         else {
-                            // We got a good reason why we multiply index position by dotDistance
-                            // Without *dotDistance then the dotsPerUnit metric acts EXACTLY like Perlin Noise Scaler
-                            // (aka multiply dotDistance by 2 and divide Perlin Noise Scaler by two and you get same image)
-                            // We want instead to control RESOLUTION meaning increasing the dotDistance
-                            // should increase how many perlin samples are shown within the "same boundaries"
-                            gridCell.cornerValues[i] = GetPixelValue(gridCell.cornerPositions[i] * dotDistance);
+                            // Sample the noise using the dots resolution aka their position
+                            // More dots will lower 'dotDistance' and thus will increase the 
+                            // number of samples taken for the same unit of noise
+                            gridCell.cornerValues[i] = GetPixelValue(gridCell.cornerPositions[i], dotDistance);
                         }
                     }
 
@@ -109,9 +107,9 @@ public class NoisyDotsGenerator : MonoBehaviour {
                     for (int i = 0; i < surfaceTriangles.Count; i++) {
                         int startingOffset = vertices.Count;
 
-                        vertices.Add(cubeCornerOffset + surfaceTriangles[i].corners[0] * dotDistance);
-                        vertices.Add(cubeCornerOffset + surfaceTriangles[i].corners[1] * dotDistance);
-                        vertices.Add(cubeCornerOffset + surfaceTriangles[i].corners[2] * dotDistance);
+                        vertices.Add(cubeCornerOffset + surfaceTriangles[i].corners[0]);
+                        vertices.Add(cubeCornerOffset + surfaceTriangles[i].corners[1]);
+                        vertices.Add(cubeCornerOffset + surfaceTriangles[i].corners[2]);
 
                         triangles.Add(startingOffset);
                         triangles.Add(startingOffset + 2);
@@ -139,12 +137,13 @@ public class NoisyDotsGenerator : MonoBehaviour {
         return false;
     }
 
-
+    Vector3 GetPixelPosition(Vector3 index, float dotDistance) {
+        return transform.position - scale / 2 + index * dotDistance;
+    }
     // Get noise in 3D position
-    float GetPixelValue(Vector3 pos) {
-        //return map(  (int)Mathf.Abs( pos.x * pos.z * 227)<<16 + (int)Mathf.Abs(pos.y * pos.y * 1213)<<8 + (int)Mathf.Abs(pos.z* 727),0, int.MaxValue,0, 1);
+    float GetPixelValue(Vector3 pos, float dotDistance) {
+        if (pos.y < groundHeight) return 1;
 
-        //if (pos.y < transform.position.y - scale.y + groundHeight) return 1;
         return Perlin.Noise(pos.x * perlinNoiseScale, pos.y * perlinNoiseScale, pos.z * perlinNoiseScale) / 2 + 0.5f;
     }
     public float map(float value, float from1, float to1, float from2, float to2) {
