@@ -54,7 +54,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
         // It is half of the scale in order to align the mesh with a cube which has the center in the origin
         // Any position transformation done in the editor actually adds that offset to every vertex in the mesh
         // So we MUST NOT add that offset ourselves and this is not what this variable is for.
-        Vector3 cubeCornerOffset = - scale / 2;     
+        Vector3 cubeCornerOffset = -scale / 2;
 
         List<Vector3> vertices = new List<Vector3>();
         List<int> triangles = new List<int>();
@@ -95,7 +95,14 @@ public class NoisyDotsGenerator : MonoBehaviour {
                     for (int i = 0; i < 8; i++) {
                         // Check if the point lies on the cube itself and seal it off
                         if (isPointOnCube(positions[i], dotsPerAxis)) gridCell.cornerValues[i] = 0;
-                        else gridCell.cornerValues[i] = GetPixelValue(gridCell.cornerPositions[i]);
+                        else {
+                            // We got a good reason why we multiply index position by dotDistance
+                            // Without *dotDistance then the dotsPerUnit metric acts EXACTLY like Perlin Noise Scaler
+                            // (aka multiply dotDistance by 2 and divide Perlin Noise Scaler by two and you get same image)
+                            // We want instead to control RESOLUTION meaning increasing the dotDistance
+                            // should increase how many perlin samples are shown within the "same boundaries"
+                            gridCell.cornerValues[i] = GetPixelValue(gridCell.cornerPositions[i] * dotDistance);
+                        }
                     }
 
                     var surfaceTriangles = MarchingCubes.GetSurface(gridCell);
@@ -131,7 +138,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
         if (pos.x == maxIndexes.x - 1) return true;
         return false;
     }
-    
+
 
     // Get noise in 3D position
     float GetPixelValue(Vector3 pos) {
