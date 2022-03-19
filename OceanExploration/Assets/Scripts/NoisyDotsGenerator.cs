@@ -11,6 +11,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
     public float perlinNoiseScale = 0.26f;
     public bool refresh = false;
 
+    public float terraceHeight = 4;
     public float groundHeight = 0.2f;
 
     private float prevThreshold;
@@ -94,7 +95,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
 
                     for (int i = 0; i < 8; i++) {
                         // Check if the point lies on the cube itself and seal it off
-                        if (isPointOnCube(Vector3Int.FloorToInt(positions[i]), dotsPerAxis)) gridCell.cornerValues[i] = threshold-1;
+                        if (isPointOnCube(Vector3Int.FloorToInt(positions[i]), dotsPerAxis)) gridCell.cornerValues[i] = threshold - 1;
                         else {
                             // Sample the noise using the dots resolution aka their position
                             // More dots will lower 'dotDistance' and thus will increase the 
@@ -143,11 +144,12 @@ public class NoisyDotsGenerator : MonoBehaviour {
     }
     // Get noise in 3D position
     float GetPixelValue(Vector3 pos, float dotDistance, Vector3Int dotsPerAxis) {
-        if (pos.y <= groundHeight) return 1;
+        //if (pos.y <= groundHeight) return 1;
 
-        float noise = Perlin.Noise(pos.x * perlinNoiseScale, pos.y * perlinNoiseScale, pos.z * perlinNoiseScale) / 2 + 0.5f;
+        float noise = Perlin.Noise(pos.x * perlinNoiseScale, pos.y * perlinNoiseScale, pos.z * perlinNoiseScale);// / 2 + 0.5f;
+        float noiseWeight = dotsPerAxis.y * dotDistance;
 
-        return pos.y % 4  - pos.y + noise ;
+        return ((pos.y % terraceHeight) - pos.y)*0.8f + noise* noiseWeight;
 
         return noise + noise * (pos.y % 4);//  map(pos.y, 0, dotsPerAxis.y * dotDistance, 1.5f, 0);
     }

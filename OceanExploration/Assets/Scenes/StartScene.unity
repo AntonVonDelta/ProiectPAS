@@ -487,10 +487,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e40bf5076197deb48a247c374c1c6476, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dotsPerUnit: 4
+  dotsPerUnit: 3
   scale: {x: 20, y: 20, z: 20}
   showGizmo: 0
-  threshold: 0.5
-  perlinNoiseScale: 0.26
+  threshold: -0.98
+  perlinNoiseScale: 0.3
   refresh: 0
+  terraceHeight: 4
   groundHeight: 0.2
