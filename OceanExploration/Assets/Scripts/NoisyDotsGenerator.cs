@@ -144,15 +144,30 @@ public class NoisyDotsGenerator : MonoBehaviour {
     }
     // Get noise in 3D position
     float GetPixelValue(Vector3 pos, float dotDistance, Vector3Int dotsPerAxis) {
-        //if (pos.y <= groundHeight) return 1;
+        if (pos.y <= groundHeight) return threshold + 1;
 
-        float noise = Perlin.Noise(pos.x * perlinNoiseScale, pos.y * perlinNoiseScale, pos.z * perlinNoiseScale);// / 2 + 0.5f;
-        float noiseWeight = dotsPerAxis.y * dotDistance;
+        float noise = Perlin.Noise(pos.x * perlinNoiseScale, pos.y * perlinNoiseScale, pos.z * perlinNoiseScale) / 2 + 0.5f;
+        float squishFactor = map(pos.y, 0, dotsPerAxis.y * dotDistance, 1f, 0);
 
-        return ((pos.y % terraceHeight) - pos.y)*0.8f + noise* noiseWeight;
+        //float noiseWeight = dotsPerAxis.y * dotDistance;
+        //return ((pos.y % terraceHeight) - pos.y)*0.8f + noise* noiseWeight;
 
-        return noise + noise * (pos.y % 4);//  map(pos.y, 0, dotsPerAxis.y * dotDistance, 1.5f, 0);
+        return noise * squishFactor;
     }
+
+    float GetCavesPixelValue(Vector3 pos, float dotDistance, Vector3Int dotsPerAxis) {
+        // Creates solid blocks with walkable caves inside on multiple levels
+        // The levels are created by the terraceHeight
+        // Tests params:
+        //  Scale 20 20 20
+        //  Thresh 0.5
+        //  Perlin Scale 0.26
+        //  Terrace height 4
+        float noise = Perlin.Noise(pos.x * perlinNoiseScale, pos.y * perlinNoiseScale, pos.z * perlinNoiseScale) / 2 + 0.5f;
+
+        return (1f + (pos.y % terraceHeight) / terraceHeight) * noise;
+    }
+
     public float map(float value, float from1, float to1, float from2, float to2) {
         return (value - from1) / (to1 - from1) * (to2 - from2) + from2;
     }

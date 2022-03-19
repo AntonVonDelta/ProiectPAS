@@ -490,8 +490,8 @@ MonoBehaviour:
   dotsPerUnit: 3
   scale: {x: 20, y: 20, z: 20}
   showGizmo: 0
-  threshold: -0.98
-  perlinNoiseScale: 0.3
+  threshold: 0.4
+  perlinNoiseScale: 0.2
   refresh: 0
   terraceHeight: 4
-  groundHeight: 0.2
+  groundHeight: 1
