@@ -4,6 +4,13 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class NoisyDotsGenerator : MonoBehaviour {
+    struct GPUTriangle {
+        Vector3 p1;
+        Vector3 p2;
+        Vector3 p3;
+    };
+
+    public ComputeShader marchingCubesShader;
     public int dotsPerUnit = 1;
     public Vector3 scale = new Vector3(1, 1, 1);
     public bool showGizmo = false;
@@ -31,6 +38,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
         mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
 
         UpdateMesh();
+        //UpdateMeshGPU();
     }
 
     // Update is called once per frame
@@ -40,8 +48,33 @@ public class NoisyDotsGenerator : MonoBehaviour {
             prevPerlinNoiseScale = perlinNoiseScale;
             refresh = false;
 
-            UpdateMesh();
+            //UpdateMesh();
+            UpdateMeshGPU();
         }
+    }
+
+    void UpdateMeshGPU() {
+        Vector3Int dotsPerAxis = Vector3Int.RoundToInt(scale * dotsPerUnit);
+        float dotDistance = (float)1 / dotsPerUnit;
+        int structSize = 3 * sizeof(float);
+
+        // We create a compute buffer big enough to hold all possible triangles
+        // Max 5 triangles per marched cube
+        ComputeBuffer triangleBuffer = new ComputeBuffer(dotsPerAxis.x * dotsPerAxis.y * dotsPerAxis.z * 5, structSize, ComputeBufferType.Append);
+        
+        marchingCubesShader.SetBuffer(0, "triangleBuffer", triangleBuffer);
+        marchingCubesShader.SetFloat("surfaceValue", threshold);
+        marchingCubesShader.SetFloat("dotDistance", dotDistance);
+        marchingCubesShader.SetVector("dotsPerAxis",new Vector4(dotsPerAxis.x, dotsPerAxis.y, dotsPerAxis.z,0));
+
+        marchingCubesShader.Dispatch(0, Mathf.CeilToInt(dotsPerAxis.x / 8) * 8, Mathf.CeilToInt(dotsPerAxis.y / 8) * 8, Mathf.CeilToInt(dotsPerAxis.z / 8) * 8);
+
+        GPUTriangle[] triangles=new GPUTriangle[dotsPerAxis.x * dotsPerAxis.y * dotsPerAxis.z * 5];
+        triangleBuffer.GetData(triangles);
+        
+        Debug.Log("Shader dispatched");
+
+        triangleBuffer.Dispose();
     }
 
     void UpdateMesh() {
@@ -95,7 +128,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
 
                     for (int i = 0; i < 8; i++) {
                         // Check if the point lies on the cube itself and seal it off
-                        if (isPointOnCube(Vector3Int.FloorToInt(positions[i]), dotsPerAxis)) gridCell.cornerValues[i] = threshold - 1;
+                        if (IsPointOnCube(Vector3Int.FloorToInt(positions[i]), dotsPerAxis)) gridCell.cornerValues[i] = threshold - 1;
                         else {
                             // Sample the noise using the dots resolution aka their position
                             // More dots will lower 'dotDistance' and thus will increase the 
@@ -128,7 +161,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
         mesh.RecalculateBounds();
     }
 
-    bool isPointOnCube(Vector3Int pos, Vector3Int maxIndexes) {
+    bool IsPointOnCube(Vector3Int pos, Vector3Int maxIndexes) {
         if (pos.y == 0) return true;
         if (pos.z == 0) return true;
         if (pos.x == 0) return true;

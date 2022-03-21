@@ -487,8 +487,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e40bf5076197deb48a247c374c1c6476, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  marchingCubesShader: {fileID: 7200000, guid: 1723cc3632efc1346a230e6d471483c0, type: 3}
   dotsPerUnit: 3
-  scale: {x: 20, y: 20, z: 20}
+  scale: {x: 1, y: 1, z: 1}
   showGizmo: 0
   threshold: 0.4
   perlinNoiseScale: 0.2
