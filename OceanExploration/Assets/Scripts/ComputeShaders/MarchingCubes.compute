@@ -303,7 +303,7 @@ static int facetsTable[][16] = {
 	{ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 }
 };
 
-static int perm[] = {
+static uint perm[] = {
 	151, 160, 137, 91, 90, 15,
         131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23,
         190, 6, 148, 247, 120, 234, 75, 0, 26, 197, 62, 94, 252, 219, 203, 117, 35, 11, 32, 57, 177, 33,
@@ -321,11 +321,25 @@ static int perm[] = {
 };
 
 RWStructuredBuffer<Triangle> Result;
+float dotDistance;
+float3 dotsPerAxis;
 
-[numthreads(1, 1, 1)]
+[numthreads(8, 8, 8)]
 void CSMain(uint3 executionId : SV_DispatchThreadID) {
-	uint3 lowerLeftCornerId = executionId * 8;
+	// Do not cross the boundaries
+	if (any(executionId > dotsPerAxis))
+		return;
+	
+	
+	float cornerValues[8];
+	
+	
+	
+	[unroll]
+	for (int i = 0; i < 8; i++) {
+		cornerValues[i] = noise(
 
+	}
     
     
 
@@ -350,7 +364,9 @@ void CSMain(uint3 executionId : SV_DispatchThreadID) {
 
     // I can have a vertex on each edge
 	Vector3[]
+
 	interpolatedVertexes = new
+
 	Vector3[12];
 	int intersectedEdges = edgeTable[edgeTableIndex];
 
@@ -360,51 +376,63 @@ void CSMain(uint3 executionId : SV_DispatchThreadID) {
 	if ((intersectedEdges & 1) != 0) {
         // Edge 0
 		interpolatedVertexes[0] = InterpolateVertexOnEdge(ref
+
 		gridcell, 0, 1);
 	}
 	if ((intersectedEdges & 2) != 0) {
 		interpolatedVertexes[1] = InterpolateVertexOnEdge(ref
+
 		gridcell, 2, 1);
 	}
 	if ((intersectedEdges & 4) != 0) {
 		interpolatedVertexes[2] = InterpolateVertexOnEdge(ref
+
 		gridcell, 2, 3);
 	}
 	if ((intersectedEdges & 8) != 0) {
 		interpolatedVertexes[3] = InterpolateVertexOnEdge(ref
+
 		gridcell, 3, 0);
 	}
 	if ((intersectedEdges & 16) != 0) {
 		interpolatedVertexes[4] = InterpolateVertexOnEdge(ref
+
 		gridcell, 4, 5);
 	}
 	if ((intersectedEdges & 32) != 0) {
 		interpolatedVertexes[5] = InterpolateVertexOnEdge(ref
+
 		gridcell, 5, 6);
 	}
 	if ((intersectedEdges & 64) != 0) {
 		interpolatedVertexes[6] = InterpolateVertexOnEdge(ref
+
 		gridcell, 6, 7);
 	}
 	if ((intersectedEdges & 128) != 0) {
 		interpolatedVertexes[7] = InterpolateVertexOnEdge(ref
+
 		gridcell, 7, 4);
 	}
 
 	if ((intersectedEdges & 256) != 0) {
 		interpolatedVertexes[8] = InterpolateVertexOnEdge(ref
+
 		gridcell, 0, 4);
 	}
 	if ((intersectedEdges & 512) != 0) {
 		interpolatedVertexes[9] = InterpolateVertexOnEdge(ref
+
 		gridcell, 1, 5);
 	}
 	if ((intersectedEdges & 1024) != 0) {
 		interpolatedVertexes[10] = InterpolateVertexOnEdge(ref
+
 		gridcell, 2, 6);
 	}
 	if ((intersectedEdges & 2048) != 0) {
 		interpolatedVertexes[11] = InterpolateVertexOnEdge(ref
+
 		gridcell, 3, 7);
 	}
 
@@ -415,7 +443,7 @@ void CSMain(uint3 executionId : SV_DispatchThreadID) {
 			break;
 
 		Triangle t;
-		t.corners = new
+
 		Vector3[3];
 		t.corners[0] = interpolatedVertexes[facetsTable[edgeTableIndex, i]];
 		t.corners[1] = interpolatedVertexes[facetsTable[edgeTableIndex, i + 1]];
@@ -430,7 +458,12 @@ void CSMain(uint3 executionId : SV_DispatchThreadID) {
 float Fade(float t) {
 	return t * t * t * (t * (t * 6 - 15) + 10);
 }
-
+float Grad(uint hash, float x, float y, float z) {
+	uint h = hash & 15;
+	float u = h < 8 ? x : y;
+	float v = h < 4 ? y : (h == 12 || h == 14 ? x : z);
+	return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
+}
 float Noise(float3 pos) {
 	uint X = int(pos.x) & 0xff;
 	uint Y = int(pos.y) & 0xff;
@@ -451,10 +484,15 @@ float Noise(float3 pos) {
 	uint AB = (perm[A + 1] + Z) & 0xff;
 	uint BB = (perm[B + 1] + Z) & 0xff;
     
-	return Lerp(w, Lerp(v, Lerp(u, Grad(perm[AA], x, y, z), Grad(perm[BA], x - 1, y, z)),
-                               Lerp(u, Grad(perm[AB], x, y - 1, z), Grad(perm[BB], x - 1, y - 1, z))),
-                       Lerp(v, Lerp(u, Grad(perm[AA + 1], x, y, z - 1), Grad(perm[BA + 1], x - 1, y, z - 1)),
-                               Lerp(u, Grad(perm[AB + 1], x, y - 1, z - 1), Grad(perm[BB + 1], x - 1, y - 1, z - 1))));
+	return lerp(
+		lerp(lerp(Grad(perm[AA], pos.x, pos.y, pos.z), Grad(perm[BA], pos.x - 1, pos.y, pos.z), u),
+			  lerp(Grad(perm[AB], pos.x, pos.y - 1, pos.z), Grad(perm[BB], pos.x - 1, pos.y - 1, pos.z), u)
+		, v),
+	
+		lerp(lerp(Grad(perm[AA + 1], pos.x, pos.y, pos.z - 1), Grad(perm[BA + 1], pos.x - 1, pos.y, pos.z - 1), u),
+			 lerp(Grad(perm[AB + 1], pos.x, pos.y - 1, pos.z - 1), Grad(perm[BB + 1], pos.x - 1, pos.y - 1, pos.z - 1), u)
+		, v)
+	, w);
 }
 
 
