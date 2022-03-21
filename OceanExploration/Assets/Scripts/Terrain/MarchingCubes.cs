@@ -331,7 +331,7 @@ public class MarchingCubes {
 
         if ((intersectedEdges & 1) != 0) {
             // Edge 0
-            interpolatedVertexes[0] = InterpolateVertexOnEdge(ref gridcell,0,1);
+            interpolatedVertexes[0] = InterpolateVertexOnEdge(ref gridcell, 0, 1);
         }
         if ((intersectedEdges & 2) != 0) {
             interpolatedVertexes[1] = InterpolateVertexOnEdge(ref gridcell, 2, 1);
@@ -354,7 +354,7 @@ public class MarchingCubes {
         if ((intersectedEdges & 128) != 0) {
             interpolatedVertexes[7] = InterpolateVertexOnEdge(ref gridcell, 7, 4);
         }
-        
+
         if ((intersectedEdges & 256) != 0) {
             interpolatedVertexes[8] = InterpolateVertexOnEdge(ref gridcell, 0, 4);
         }
@@ -362,34 +362,34 @@ public class MarchingCubes {
             interpolatedVertexes[9] = InterpolateVertexOnEdge(ref gridcell, 1, 5);
         }
         if ((intersectedEdges & 1024) != 0) {
-            interpolatedVertexes[10] = InterpolateVertexOnEdge(ref gridcell, 2, 6);
+            interpolatedVertexes[10] = InterpolateVertexOnEdge(ref gridcell,2, 6);
         }
         if ((intersectedEdges & 2048) != 0) {
-            interpolatedVertexes[11] = InterpolateVertexOnEdge(ref gridcell, 3, 7);
+            interpolatedVertexes[11] = InterpolateVertexOnEdge(ref gridcell,3, 7);
         }
 
 
 
-        for(int i = 0; i < 15; i+=3) {
-            if (facetsTable[edgeTableIndex,i] == -1) break;
+        for (int i = 0; i < 15; i += 3) {
+            if (facetsTable[edgeTableIndex, i] == -1) break;
 
             Triangle t;
             t.corners = new Vector3[3];
             t.corners[0] = interpolatedVertexes[facetsTable[edgeTableIndex, i]];
-            t.corners[1] = interpolatedVertexes[facetsTable[edgeTableIndex, i+1]];
-            t.corners[2] = interpolatedVertexes[facetsTable[edgeTableIndex, i+2]];
+            t.corners[1] = interpolatedVertexes[facetsTable[edgeTableIndex, i + 1]];
+            t.corners[2] = interpolatedVertexes[facetsTable[edgeTableIndex, i + 2]];
             result.Add(t);
         }
 
         return result;
     }
 
-    static private Vector3 InterpolateVertexOnEdge(ref GRIDCELL gridcell,int vertexIndex1,int vertexIndex2) {
+    static private Vector3 InterpolateVertexOnEdge(ref GRIDCELL gridcell, int vertexIndex1, int vertexIndex2) {
         Vector3 p1 = gridcell.cornerPositions[vertexIndex1];
         Vector3 p2 = gridcell.cornerPositions[vertexIndex2];
         float p1Value = gridcell.cornerValues[vertexIndex1];
         float p2Value = gridcell.cornerValues[vertexIndex2];
-        float surfaceValue= gridcell.surfaceValue;
+        float surfaceValue = gridcell.surfaceValue;
 
         if (Mathf.Approximately(p1Value, surfaceValue)) {
             return p1;
@@ -400,10 +400,10 @@ public class MarchingCubes {
 
         if (p1Value > p2Value) {
             // Means p1 is inside the volume
-            return p1 + (p1 - p2) / (p1Value - p2Value) * Mathf.Clamp(surfaceValue - p1Value,0, p1Value - p2Value);
+            return p1 + (p1 - p2) / (p1Value - p2Value) * Mathf.Clamp(surfaceValue - p1Value, 0, p1Value - p2Value);
         }
 
         // Means p2 is inside the volume
-        return p2 + (p2 - p1) / (p2Value - p1Value) * Mathf.Clamp(surfaceValue - p2Value,0, p2Value - p1Value);
+        return p2 + (p2 - p1) / (p2Value - p1Value) * Mathf.Clamp(surfaceValue - p2Value, 0, p2Value - p1Value);
     }
 }
