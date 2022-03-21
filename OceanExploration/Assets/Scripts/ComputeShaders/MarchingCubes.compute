@@ -330,7 +330,7 @@ static int2 edgeToVertexIndexes[] = {
 };
 
 
-RWStructuredBuffer<Triangle> Result;
+AppendStructuredBuffer<Triangle> Result;
 float surfaceValue;
 float dotDistance;
 float3 dotsPerAxis;
@@ -376,27 +376,30 @@ void CSMain(uint3 executionId : SV_DispatchThreadID) {
 	int edgeTableIndex = 0;
 	
 	[unroll]
-	for (int i = 0; i < 8; i++) {
-		edgeTableIndex += (cornerValues[0] > surfaceValue) * (1 << i);
+	for (int j = 0; j < 8; j++) {
+		edgeTableIndex += (cornerValues[0] > surfaceValue) * (1 << j);
 	}
-
-	int intersectedEdges = edgeTable[edgeTableIndex];
-
-	for (int i = 0; i < 15; i += 3) {
-		if (facetsTable[edgeTableIndex][i] == -1)
+	
+	
+	for (int k = 0; k < 15; k += 3) {
+		if (facetsTable[edgeTableIndex][k] == -1)
 			break;
 
 		Triangle t;
 
-		t.p1 = InterpolatePoints(cornerPosition[ edgeToVertexIndexes ]);
+		int edge0 = facetsTable[edgeTableIndex][k];
+		int edge1 = facetsTable[edgeTableIndex][k+1];
+		int edge2 = facetsTable[edgeTableIndex][k+2];
 		
-		Vector3[3];
-		t.corners[0] = interpolatedVertexes[facetsTable[edgeTableIndex, i]];
-		t.corners[1] = interpolatedVertexes[facetsTable[edgeTableIndex, i + 1]];
-		t.corners[2] = interpolatedVertexes[facetsTable[edgeTableIndex, i + 2]];
-		result.Add(t);
+		t.p1 = InterpolatePoints(cornerPosition[edgeToVertexIndexes[edge0][0]], cornerPosition[edgeToVertexIndexes[edge0][1]],
+								cornerValues[edgeToVertexIndexes[edge0][0]], cornerValues[edgeToVertexIndexes[edge0][1]]);
+		t.p2 = InterpolatePoints(cornerPosition[edgeToVertexIndexes[edge1][0]], cornerPosition[edgeToVertexIndexes[edge1][1]],
+								cornerValues[edgeToVertexIndexes[edge1][0]], cornerValues[edgeToVertexIndexes[edge1][1]]);
+		t.p3 = InterpolatePoints(cornerPosition[edgeToVertexIndexes[edge2][0]], cornerPosition[edgeToVertexIndexes[edge2][1]],
+								cornerValues[edgeToVertexIndexes[edge2][0]], cornerValues[edgeToVertexIndexes[edge2][1]]);
+		
+		
+		Result.Append(t);
 	}
-
-
 
 }
