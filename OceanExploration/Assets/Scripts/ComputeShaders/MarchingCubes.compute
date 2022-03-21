@@ -1,5 +1,5 @@
-
 #pragma kernel CSMain
+#pragma enable_d3d11_debug_symbols 
 
 #include "PerlinCompute.cginc"
 
@@ -346,12 +346,19 @@ void CSMain(uint3 executionId : SV_DispatchThreadID) {
 	//triangleBuffer.Append(tt);
 	//return;
 	
+	
 	// Do not cross the boundaries
-	if (any(executionId >= dotsPerAxis))
+	if (any(executionId + uint3(1, 1, 1) >= dotsPerAxis))
 		return;
 	
 	float3 localSpacePos = mul(executionId, dotDistance);
 	
+	Triangle tt;
+	tt.p1 = executionId;
+	tt.p2 = executionId + uint3(1, 1, 1);
+	tt.p3 = dotsPerAxis;
+	triangleBuffer.Append(tt);
+	return;
 	// Stores the random values for each corner
 	float cornerValues[8];
 	float3 cornerPosition[8];
@@ -360,11 +367,11 @@ void CSMain(uint3 executionId : SV_DispatchThreadID) {
 	for (int i = 0; i < 8; i++) {
 		cornerPosition[i] = mul((executionId + cubeIndexes[i]), dotDistance);
 		
-		if (IsPointOnSurface(executionId + cubeIndexes[i])) {
-			cornerValues[i] = surfaceValue - 1;
-		} else {
-			cornerValues[i] = noise(cornerPosition[i]);
-		}
+		//if (IsPointOnSurface(executionId + cubeIndexes[i])) {
+		//	cornerValues[i] = surfaceValue - 1;
+		//} else {
+		cornerValues[i] = noise(cornerPosition[i]) / 2 + 0.5f;
+		//}
 	}
 	
     // Set the bits according to which vertex is inside the volume/surface

@@ -61,22 +61,33 @@ public class NoisyDotsGenerator : MonoBehaviour {
         // We create a compute buffer big enough to hold all possible triangles
         // Max 5 triangles per marched cube
         ComputeBuffer triangleBuffer = new ComputeBuffer(dotsPerAxis.x * dotsPerAxis.y * dotsPerAxis.z * 5, structSize, ComputeBufferType.Append);
-        
+        GPUTriangle[] triangles=new GPUTriangle[dotsPerAxis.x * dotsPerAxis.y * dotsPerAxis.z * 5];
+        triangleBuffer.SetCounterValue(0);
+
         marchingCubesShader.SetBuffer(0, "triangleBuffer", triangleBuffer);
         marchingCubesShader.SetFloat("surfaceValue", threshold);
         marchingCubesShader.SetFloat("dotDistance", dotDistance);
-        marchingCubesShader.SetVector("dotsPerAxis",new Vector4(dotsPerAxis.x, dotsPerAxis.y, dotsPerAxis.z,0));
-
+        marchingCubesShader.SetInts("dotsPerAxis",new int[] { dotsPerAxis.x, dotsPerAxis.y, dotsPerAxis.z });
         marchingCubesShader.Dispatch(0, 1,1,1);
 
-        GPUTriangle[] triangles=new GPUTriangle[dotsPerAxis.x * dotsPerAxis.y * dotsPerAxis.z * 5];
+        int triangleCount = GetAppendCount(triangleBuffer);
         triangleBuffer.GetData(triangles);
         
         Debug.Log("Shader dispatched");
 
         triangleBuffer.Dispose();
     }
+    //https://sites.google.com/site/aliadevlog/counting-buffers-in-directcompute
+    private static int GetAppendCount(ComputeBuffer appendBuffer) {
+        ComputeBuffer countBuffer = new ComputeBuffer(1, sizeof(int), ComputeBufferType.IndirectArguments);
+        ComputeBuffer.CopyCount(appendBuffer, countBuffer, 0);
 
+        Debug.Log("Copy buffer : " + countBuffer.count);
+        int[] counter = new int[1] { 0 };
+        countBuffer.GetData(counter);
+        countBuffer.Dispose();
+        return counter[0];
+    }
     void UpdateMesh() {
         // If we got 1 dots per unit and a scale of 2 then
         // 0   1   (2)  we actualy only got dots 0 and 1 while 2 is part of the next chunk
