@@ -5,9 +5,9 @@ using UnityEngine.UI;
 
 public class NoisyDotsGenerator : MonoBehaviour {
     struct GPUTriangle {
-        Vector3 p1;
-        Vector3 p2;
-        Vector3 p3;
+        public Vector3 p1;
+        public Vector3 p2;
+        public Vector3 p3;
     };
 
     public ComputeShader marchingCubesShader;
@@ -61,7 +61,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
         // We create a compute buffer big enough to hold all possible triangles
         // Max 5 triangles per marched cube
         ComputeBuffer triangleBuffer = new ComputeBuffer(dotsPerAxis.x * dotsPerAxis.y * dotsPerAxis.z * 5, structSize, ComputeBufferType.Append);
-        GPUTriangle[] triangles=new GPUTriangle[dotsPerAxis.x * dotsPerAxis.y * dotsPerAxis.z * 5];
+        GPUTriangle[] surfaceTriangles = new GPUTriangle[dotsPerAxis.x * dotsPerAxis.y * dotsPerAxis.z * 5];
         triangleBuffer.SetCounterValue(0);
 
         marchingCubesShader.SetBuffer(0, "triangleBuffer", triangleBuffer);
@@ -71,11 +71,33 @@ public class NoisyDotsGenerator : MonoBehaviour {
         marchingCubesShader.Dispatch(0, 1,1,1);
 
         int triangleCount = GetAppendCount(triangleBuffer);
-        triangleBuffer.GetData(triangles);
+        triangleBuffer.GetData(surfaceTriangles);
         
         Debug.Log($"Shader dispatched with {triangleCount} triangles");
-
         triangleBuffer.Dispose();
+
+
+        List<Vector3> vertices = new List<Vector3>();
+        List<int> triangles = new List<int>();
+        Vector3 cubeCornerOffset = -scale / 2;
+        for (int i = 0; i < surfaceTriangles.Length; i++) {
+            int startingOffset = vertices.Count;
+
+            vertices.Add(cubeCornerOffset + surfaceTriangles[i].p1);
+            vertices.Add(cubeCornerOffset + surfaceTriangles[i].p2);
+            vertices.Add(cubeCornerOffset + surfaceTriangles[i].p3);
+
+            // Reverse order here for culling to work
+            triangles.Add(startingOffset);
+            triangles.Add(startingOffset + 2);
+            triangles.Add(startingOffset + 1);
+        }
+
+        mesh.Clear();
+        mesh.vertices = vertices.ToArray();
+        mesh.triangles = triangles.ToArray();
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
     }
     //https://sites.google.com/site/aliadevlog/counting-buffers-in-directcompute
     private static int GetAppendCount(ComputeBuffer appendBuffer) {

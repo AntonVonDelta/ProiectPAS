@@ -302,20 +302,20 @@ float dotDistance;
 uint3 dotsPerAxis;
 
 float3 InterpolatePoints(float3 p1, float3 p2, float p1Value, float p2Value) {
-	if (abs(p1Value - surfaceValue) < 0.00001) {
+	if (abs(p1Value - surfaceValue) < 0.00001f) {
 		return p1;
 	}
-	if (abs(p2Value - surfaceValue) < 0.00001) {
+	if (abs(p2Value - surfaceValue) < 0.00001f) {
 		return p2;
 	}
 	
 	if (p1Value > p2Value) {
         // Means p1 is inside the volume
-		return p1 + (p1 - p2) / (p1Value - p2Value) * clamp(surfaceValue - p1Value, 0, p1Value - p2Value);
+		return p1 + mul((p1 - p2), 1.0f / (p1Value - p2Value)) * clamp(surfaceValue - p1Value, 0, p1Value - p2Value);
 	}
 
     // Means p2 is inside the volume
-	return p2 + mul((p2 - p1), 1 / (p2Value - p1Value)) * clamp(surfaceValue - p2Value, 0, p2Value - p1Value);
+	return p2 + mul((p2 - p1), 1.0f / (p2Value - p1Value)) * clamp(surfaceValue - p2Value, 0, p2Value - p1Value);
 }
 
 // Returns true if the point is on the outer surface
@@ -360,14 +360,22 @@ void CSMain(uint3 executionId : SV_DispatchThreadID) {
 		//}
 	}
 	
+	
+	
     // Set the bits according to which vertex is inside the volume/surface
 	int edgeTableIndex = 0;
 	
 	//[unroll]
 	for (int j = 0; j < 8; j++) {
-		edgeTableIndex += (cornerValues[0] > surfaceValue) * (1 << j);
+		edgeTableIndex += (cornerValues[j] > surfaceValue) * (1 << j);
 	}
 	
+	//Triangle tt;
+	//tt.p1 = executionId;
+	//tt.p2 = cornerPosition[0];
+	//tt.p3 = float3(edgeTableIndex, surfaceValue, cornerValues[2]);
+	//triangleBuffer.Append(tt);
+	//return;
 	
 	for (int k = 0; k < 15; k += 3) {
 		if (facetsTable[edgeTableIndex][k] == -1)
@@ -378,6 +386,8 @@ void CSMain(uint3 executionId : SV_DispatchThreadID) {
 		int edge0 = facetsTable[edgeTableIndex][k];
 		int edge1 = facetsTable[edgeTableIndex][k + 1];
 		int edge2 = facetsTable[edgeTableIndex][k + 2];
+		
+		
 		
 		t.p1 = InterpolatePoints(cornerPosition[edgeToVertexIndexes[edge0][0]], cornerPosition[edgeToVertexIndexes[edge0][1]],
 								cornerValues[edgeToVertexIndexes[edge0][0]], cornerValues[edgeToVertexIndexes[edge0][1]]);
