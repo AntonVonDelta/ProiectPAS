@@ -56,7 +56,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
     void UpdateMeshGPU() {
         Vector3Int dotsPerAxis = Vector3Int.RoundToInt(scale * dotsPerUnit);
         float dotDistance = (float)1 / dotsPerUnit;
-        int structSize = 3 * sizeof(float);
+        int structSize = 3 * 3* sizeof(float);
 
         // We create a compute buffer big enough to hold all possible triangles
         // Max 5 triangles per marched cube
@@ -67,7 +67,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
         marchingCubesShader.SetFloat("dotDistance", dotDistance);
         marchingCubesShader.SetVector("dotsPerAxis",new Vector4(dotsPerAxis.x, dotsPerAxis.y, dotsPerAxis.z,0));
 
-        marchingCubesShader.Dispatch(0, Mathf.CeilToInt(dotsPerAxis.x / 8) * 8, Mathf.CeilToInt(dotsPerAxis.y / 8) * 8, Mathf.CeilToInt(dotsPerAxis.z / 8) * 8);
+        marchingCubesShader.Dispatch(0, 1,1,1);
 
         GPUTriangle[] triangles=new GPUTriangle[dotsPerAxis.x * dotsPerAxis.y * dotsPerAxis.z * 5];
         triangleBuffer.GetData(triangles);

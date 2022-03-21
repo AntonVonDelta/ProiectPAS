@@ -338,63 +338,63 @@ bool IsPointOnSurface(uint3 index) {
 
 [numthreads(8, 8, 8)]
 void CSMain(uint3 executionId : SV_DispatchThreadID) {
-	Triangle tt;
-	tt.p1 = executionId;
-	tt.p2 = (1, 1, 1);
-	tt.p3 = (2, 2, 2);
+	//Triangle tt;
+	//tt.p1 = executionId;
+	//tt.p2 = (1, 1, 1);
+	//tt.p3 = (2, 2, 2);
 	
-	triangleBuffer.Append(tt);
-	return;
+	//triangleBuffer.Append(tt);
+	//return;
 	
-	//// Do not cross the boundaries
-	//if (any(executionId >= dotsPerAxis))
-	//	return;
+	// Do not cross the boundaries
+	if (any(executionId >= dotsPerAxis))
+		return;
 	
-	//float3 localSpacePos = mul(executionId, dotDistance);
+	float3 localSpacePos = mul(executionId, dotDistance);
 	
-	//// Stores the random values for each corner
-	//float cornerValues[8];
-	//float3 cornerPosition[8];
+	// Stores the random values for each corner
+	float cornerValues[8];
+	float3 cornerPosition[8];
 	
-	////[unroll]
-	//for (int i = 0; i < 8; i++) {
-	//	cornerPosition[i] = mul((executionId + cubeIndexes[i]), dotDistance);
+	//[unroll]
+	for (int i = 0; i < 8; i++) {
+		cornerPosition[i] = mul((executionId + cubeIndexes[i]), dotDistance);
 		
-	//	if (IsPointOnSurface(executionId + cubeIndexes[i])) {
-	//		cornerValues[i] = surfaceValue - 1;
-	//	} else {
-	//		cornerValues[i] = noise(cornerPosition[i]);
-	//	}
-	//}
+		if (IsPointOnSurface(executionId + cubeIndexes[i])) {
+			cornerValues[i] = surfaceValue - 1;
+		} else {
+			cornerValues[i] = noise(cornerPosition[i]);
+		}
+	}
 	
- //   // Set the bits according to which vertex is inside the volume/surface
-	//int edgeTableIndex = 0;
+    // Set the bits according to which vertex is inside the volume/surface
+	int edgeTableIndex = 0;
 	
-	////[unroll]
-	//for (int j = 0; j < 8; j++) {
-	//	edgeTableIndex += (cornerValues[0] > surfaceValue) * (1 << j);
-	//}
+	//[unroll]
+	for (int j = 0; j < 8; j++) {
+		edgeTableIndex += (cornerValues[0] > surfaceValue) * (1 << j);
+	}
 	
 	
-	//for (int k = 0; k < 15; k += 3) {
-	//	if (facetsTable[edgeTableIndex][k] == -1)
-	//		break;
+	for (int k = 0; k < 15; k += 3) {
+		if (facetsTable[edgeTableIndex][k] == -1)
+			break;
 
-	//	Triangle t;
+		Triangle t;
 
-	//	int edge0 = facetsTable[edgeTableIndex][k];
-	//	int edge1 = facetsTable[edgeTableIndex][k + 1];
-	//	int edge2 = facetsTable[edgeTableIndex][k + 2];
+		int edge0 = facetsTable[edgeTableIndex][k];
+		int edge1 = facetsTable[edgeTableIndex][k + 1];
+		int edge2 = facetsTable[edgeTableIndex][k + 2];
 		
-	//	t.p1 = InterpolatePoints(cornerPosition[edgeToVertexIndexes[edge0][0]], cornerPosition[edgeToVertexIndexes[edge0][1]],
-	//							cornerValues[edgeToVertexIndexes[edge0][0]], cornerValues[edgeToVertexIndexes[edge0][1]]);
-	//	t.p2 = InterpolatePoints(cornerPosition[edgeToVertexIndexes[edge1][0]], cornerPosition[edgeToVertexIndexes[edge1][1]],
-	//							cornerValues[edgeToVertexIndexes[edge1][0]], cornerValues[edgeToVertexIndexes[edge1][1]]);
-	//	t.p3 = InterpolatePoints(cornerPosition[edgeToVertexIndexes[edge2][0]], cornerPosition[edgeToVertexIndexes[edge2][1]],
-	//							cornerValues[edgeToVertexIndexes[edge2][0]], cornerValues[edgeToVertexIndexes[edge2][1]]);
+		t.p1 = InterpolatePoints(cornerPosition[edgeToVertexIndexes[edge0][0]], cornerPosition[edgeToVertexIndexes[edge0][1]],
+								cornerValues[edgeToVertexIndexes[edge0][0]], cornerValues[edgeToVertexIndexes[edge0][1]]);
+		t.p2 = InterpolatePoints(cornerPosition[edgeToVertexIndexes[edge1][0]], cornerPosition[edgeToVertexIndexes[edge1][1]],
+								cornerValues[edgeToVertexIndexes[edge1][0]], cornerValues[edgeToVertexIndexes[edge1][1]]);
+		t.p3 = InterpolatePoints(cornerPosition[edgeToVertexIndexes[edge2][0]], cornerPosition[edgeToVertexIndexes[edge2][1]],
+								cornerValues[edgeToVertexIndexes[edge2][0]], cornerValues[edgeToVertexIndexes[edge2][1]]);
 		
 		
-	//	triangleBuffer.Append(t);
-	//}
+		triangleBuffer.Append(t);
+	}
 
 }
