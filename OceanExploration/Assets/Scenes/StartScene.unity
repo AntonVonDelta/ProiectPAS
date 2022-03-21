@@ -488,10 +488,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   marchingCubesShader: {fileID: 7200000, guid: 1723cc3632efc1346a230e6d471483c0, type: 3}
-  dotsPerUnit: 1
-  scale: {x: 4, y: 4, z: 4}
+  dotsPerUnit: 4
+  scale: {x: 20, y: 20, z: 20}
+  squishTerrain: 1
   showGizmo: 0
-  threshold: 0.5
+  threshold: 0.4
   perlinNoiseScale: 0.2
   refresh: 0
   terraceHeight: 4
