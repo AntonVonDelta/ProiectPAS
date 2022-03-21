@@ -300,6 +300,7 @@ AppendStructuredBuffer<Triangle> triangleBuffer;
 float surfaceValue;
 float perlinNoiseScale;
 float dotDistance;
+bool squishTerrain;
 uint3 dotsPerAxis;
 float3 trianglePositionOffset;
 
@@ -338,6 +339,7 @@ bool IsPointOnSurface(uint3 index) {
 	return false;
 }
 
+
 [numthreads(8, 8, 8)]
 void CSMain(uint3 executionId : SV_DispatchThreadID) {
 	
@@ -355,13 +357,25 @@ void CSMain(uint3 executionId : SV_DispatchThreadID) {
 	for (int i = 0; i < 8; i++) {
 		cornerPosition[i] = mul((executionId + cubeIndexes[i]), dotDistance);
 		
-		if (IsPointOnSurface(executionId + cubeIndexes[i])) {
-			cornerValues[i] = surfaceValue - 1;
-		} else {
-			cornerValues[i] = noise(mul(cornerPosition[i], perlinNoiseScale)) / 2 + 0.5f;
-		}
+		//float squishFactor =lerp(1.0f, 0.0f, (cornerPosition[i].y - 0) / (dotsPerAxis.y * dotDistance - 0));
+		//if (cornerPosition[i].y <= groundHeight) {
+		//	cornerValues[i] = surfaceValue + 1;
+		//	continue;
+		//}
+		//if (IsPointOnSurface(executionId + cubeIndexes[i])) {
+		//	cornerValues[i] = surfaceValue - 1;
+		//} else {
+		//	cornerValues[i] = squishFactor*noise(mul(cornerPosition[i], perlinNoiseScale)); // / 2 + 0.5f;
+		//}
+
+		
+		float squishFactor = squishTerrain * lerp(1.0f, 0.0f, (cornerPosition[i].y - 0) / (dotsPerAxis.y * dotDistance - 0)) + (1 - squishTerrain)*1;
+		bool onSurface = IsPointOnSurface(executionId + cubeIndexes[i]);
+		cornerValues[i] = onSurface * (surfaceValue - 1) + (1 - onSurface) * squishFactor * noise(mul(cornerPosition[i], perlinNoiseScale));
+		
+		bool onGround = cornerPosition[i].y == 0;
+		cornerValues[i] = onGround * (surfaceValue + 1) + (1 - onGround) * cornerValues[i];
 	}
-	
 	
 	
     // Set the bits according to which vertex is inside the volume/surface

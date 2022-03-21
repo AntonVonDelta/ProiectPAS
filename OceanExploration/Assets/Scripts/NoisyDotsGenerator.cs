@@ -13,6 +13,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
     public ComputeShader marchingCubesShader;
     public int dotsPerUnit = 1;
     public Vector3 scale = new Vector3(1, 1, 1);
+    public bool squishTerrain = true;
     public bool showGizmo = false;
     public float threshold = 0.5f;
     public float perlinNoiseScale = 0.26f;
@@ -60,7 +61,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
 
         // We create a compute buffer big enough to hold all possible triangles
         // Max 5 triangles per marched cube
-        int structSize = 3*3 * sizeof(float);
+        int structSize = 3 * 3 * sizeof(float);
         ComputeBuffer triangleBuffer = new ComputeBuffer(dotsPerAxis.x * dotsPerAxis.y * dotsPerAxis.z * 5, structSize, ComputeBufferType.Append);
         GPUTriangle[] surfaceTriangles = new GPUTriangle[dotsPerAxis.x * dotsPerAxis.y * dotsPerAxis.z * 5];
         triangleBuffer.SetCounterValue(0);
@@ -69,33 +70,35 @@ public class NoisyDotsGenerator : MonoBehaviour {
         marchingCubesShader.SetFloat("surfaceValue", threshold);
         marchingCubesShader.SetFloat("perlinNoiseScale", perlinNoiseScale);
         marchingCubesShader.SetFloat("dotDistance", dotDistance);
-        marchingCubesShader.SetInts("dotsPerAxis",new int[] { dotsPerAxis.x, dotsPerAxis.y, dotsPerAxis.z });
+        marchingCubesShader.SetBool("squishTerrain", squishTerrain);
+        marchingCubesShader.SetInts("dotsPerAxis", new int[] { dotsPerAxis.x, dotsPerAxis.y, dotsPerAxis.z });
         marchingCubesShader.SetFloats("trianglePositionOffset", new float[] { cubeCornerOffset.x, cubeCornerOffset.y, cubeCornerOffset.z });
 
-        marchingCubesShader.Dispatch(0, 1+Mathf.CeilToInt(dotsPerAxis.x / 8), 1+Mathf.CeilToInt(dotsPerAxis.y / 8),1+ Mathf.CeilToInt(dotsPerAxis.z / 8));
+        marchingCubesShader.Dispatch(0, 1 + Mathf.CeilToInt(dotsPerAxis.x / 8), 1 + Mathf.CeilToInt(dotsPerAxis.y / 8), 1 + Mathf.CeilToInt(dotsPerAxis.z / 8));
 
-        int trianglesCount = GetAppendCount(triangleBuffer);
-        Debug.Log($"Shader dispatched with {trianglesCount} triangles");
+        int triangleCount = GetAppendCount(triangleBuffer);
         triangleBuffer.GetData(surfaceTriangles);
+
+        Debug.Log($"Shader dispatched with {triangleCount} triangles");
         triangleBuffer.Dispose();
 
 
         List<Vector3> vertices = new List<Vector3>();
-        List<int> indexes = new List<int>();
-        for (int i = 0; i < trianglesCount; i++) {
+        List<int> triangles = new List<int>();
+        for (int i = 0; i < surfaceTriangles.Length; i++) {
             vertices.Add(surfaceTriangles[i].p1);
             vertices.Add(surfaceTriangles[i].p2);
             vertices.Add(surfaceTriangles[i].p3);
 
             // Reverse order here for culling to work
-            indexes.Add(i);
-            indexes.Add(i + 2);
-            indexes.Add(i + 1);
+            triangles.Add(i * 3);
+            triangles.Add(i * 3 + 2);
+            triangles.Add(i * 3 + 1);
         }
 
         mesh.Clear();
         mesh.vertices = vertices.ToArray();
-        mesh.triangles = indexes.ToArray();
+        mesh.triangles = triangles.ToArray();
         mesh.RecalculateNormals();
         mesh.RecalculateBounds();
     }
