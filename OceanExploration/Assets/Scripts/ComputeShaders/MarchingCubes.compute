@@ -298,6 +298,7 @@ static int2 edgeToVertexIndexes[] = {
 
 AppendStructuredBuffer<Triangle> triangleBuffer;
 float surfaceValue;
+float perlinNoiseScale;
 float dotDistance;
 uint3 dotsPerAxis;
 
@@ -332,7 +333,7 @@ bool IsPointOnSurface(uint3 index) {
 	if (index.y == dotsPerAxis.y - 1)
 		return true;
 	if (index.x == dotsPerAxis.x - 1)
-		return true;
+		return true; 
 	return false;
 }
 
@@ -353,11 +354,11 @@ void CSMain(uint3 executionId : SV_DispatchThreadID) {
 	for (int i = 0; i < 8; i++) {
 		cornerPosition[i] = mul((executionId + cubeIndexes[i]), dotDistance);
 		
-		//if (IsPointOnSurface(executionId + cubeIndexes[i])) {
-		//	cornerValues[i] = surfaceValue - 1;
-		//} else {
-		cornerValues[i] = noise(cornerPosition[i]) / 2 + 0.5f;
-		//}
+		if (IsPointOnSurface(executionId + cubeIndexes[i])) {
+			cornerValues[i] = surfaceValue - 1;
+		} else {
+			cornerValues[i] = noise(mul(cornerPosition[i], perlinNoiseScale)) / 2 + 0.5f;
+		}
 	}
 	
 	
@@ -386,7 +387,6 @@ void CSMain(uint3 executionId : SV_DispatchThreadID) {
 		int edge0 = facetsTable[edgeTableIndex][k];
 		int edge1 = facetsTable[edgeTableIndex][k + 1];
 		int edge2 = facetsTable[edgeTableIndex][k + 2];
-		
 		
 		
 		t.p1 = InterpolatePoints(cornerPosition[edgeToVertexIndexes[edge0][0]], cornerPosition[edgeToVertexIndexes[edge0][1]],

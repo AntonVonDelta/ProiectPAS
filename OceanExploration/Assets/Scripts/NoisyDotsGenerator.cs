@@ -66,6 +66,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
 
         marchingCubesShader.SetBuffer(0, "triangleBuffer", triangleBuffer);
         marchingCubesShader.SetFloat("surfaceValue", threshold);
+        marchingCubesShader.SetFloat("perlinNoiseScale", perlinNoiseScale);
         marchingCubesShader.SetFloat("dotDistance", dotDistance);
         marchingCubesShader.SetInts("dotsPerAxis",new int[] { dotsPerAxis.x, dotsPerAxis.y, dotsPerAxis.z });
         marchingCubesShader.Dispatch(0, 1,1,1);
