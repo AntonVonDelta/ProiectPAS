@@ -73,7 +73,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
         int triangleCount = GetAppendCount(triangleBuffer);
         triangleBuffer.GetData(triangles);
         
-        Debug.Log("Shader dispatched");
+        Debug.Log($"Shader dispatched with {triangleCount} triangles");
 
         triangleBuffer.Dispose();
     }

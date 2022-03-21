@@ -338,14 +338,6 @@ bool IsPointOnSurface(uint3 index) {
 
 [numthreads(8, 8, 8)]
 void CSMain(uint3 executionId : SV_DispatchThreadID) {
-	//Triangle tt;
-	//tt.p1 = executionId;
-	//tt.p2 = (1, 1, 1);
-	//tt.p3 = (2, 2, 2);
-	
-	//triangleBuffer.Append(tt);
-	//return;
-	
 	
 	// Do not cross the boundaries
 	if (any(executionId + uint3(1, 1, 1) >= dotsPerAxis))
@@ -353,12 +345,6 @@ void CSMain(uint3 executionId : SV_DispatchThreadID) {
 	
 	float3 localSpacePos = mul(executionId, dotDistance);
 	
-	Triangle tt;
-	tt.p1 = executionId;
-	tt.p2 = executionId + uint3(1, 1, 1);
-	tt.p3 = dotsPerAxis;
-	triangleBuffer.Append(tt);
-	return;
 	// Stores the random values for each corner
 	float cornerValues[8];
 	float3 cornerPosition[8];
