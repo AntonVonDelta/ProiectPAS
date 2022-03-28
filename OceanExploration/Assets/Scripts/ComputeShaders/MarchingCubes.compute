@@ -298,13 +298,14 @@ static int2 edgeToVertexIndexes[] = {
 
 AppendStructuredBuffer<Triangle> triangleBuffer;
 bool doInterpolate;
+bool closeLateralSurface; // Whether to close the sides of the mesh
+bool squishTerrain;
 float surfaceValue;
 float perlinNoiseScale;
 float dotDistance;
-bool squishTerrain;
 uint3 dotsPerAxis;
 float3 trianglePositionOffset;
-float3 perlinPositionOffset;		// Offset to be added to the vertex BEFORE multiplying it by perlinScale
+float3 perlinPositionOffset; // Offset to be added to the vertex BEFORE multiplying it by perlinScale
 
 float3 InterpolatePoints(float3 p1, float3 p2, float p1Value, float p2Value) {
 	if (abs(p1Value - surfaceValue) < 0.00001f) {
@@ -327,6 +328,9 @@ float3 InterpolatePoints(float3 p1, float3 p2, float p1Value, float p2Value) {
 
 // Returns true if the point is on the outer surface
 bool IsPointOnSurface(uint3 index) {
+	if (!closeLateralSurface)
+		return false;
+	
 	if (index.y == 0)
 		return true;
 	if (index.z == 0)

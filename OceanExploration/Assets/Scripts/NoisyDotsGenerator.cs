@@ -74,7 +74,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
         marchingCubesShader.SetInts("dotsPerAxis", dotsPerAxis.x, dotsPerAxis.y, dotsPerAxis.z );
         marchingCubesShader.SetFloats("trianglePositionOffset", cubeCornerOffset.x, cubeCornerOffset.y, cubeCornerOffset.z);
 
-        marchingCubesShader.Dispatch(0, Mathf.CeilToInt(dotsPerAxis.x / 8), Mathf.CeilToInt(dotsPerAxis.y / 8), Mathf.CeilToInt(dotsPerAxis.z / 8));
+        marchingCubesShader.Dispatch(0, 1 + (dotsPerAxis.x / 8), 1 + (dotsPerAxis.y / 8), 1 + (dotsPerAxis.z / 8));
 
         int triangleCount = GetAppendCount(triangleBuffer);
         triangleBuffer.GetData(surfaceTriangles);

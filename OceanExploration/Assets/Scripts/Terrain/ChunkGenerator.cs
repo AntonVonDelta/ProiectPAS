@@ -40,21 +40,22 @@ public class ChunkGenerator : MonoBehaviour {
         // Remove far chunks
         for (int i = loadedChunks.Count - 1; i >= 0; i--) {
             var el = loadedChunks[i];
-            
-            if ((el.gridIndex - currentChunkGrid).magnitude <= loadingRadius) continue;
+            Vector3 tempChunkWorldPos = el.gridIndex * chunkSize;
+
+            if ((tempChunkWorldPos - transform.position).magnitude <= loadingRadius * chunkSize) continue;
 
             Destroy(el.origin);
             loadedChunks.RemoveAt(i);
         }
 
-        for (int i = -loadingRadius; i < loadingRadius; i++) {
-            for (int j = -loadingRadius; j < loadingRadius; j++) {
+        for (int i = -loadingRadius; i < loadingRadius + 1; i++) {
+            for (int j = -loadingRadius; j < loadingRadius + 1; j++) {
                 Vector3Int relativeGridIndexes = new Vector3Int(i, 0, j);
                 Vector3Int tempChunk = currentChunkGrid + relativeGridIndexes;
-                Vector3 tempChunkWorldPos = new Vector3(tempChunk.x * chunkSize, 0, tempChunk.z * chunkSize);
+                Vector3 tempChunkWorldPos = tempChunk * chunkSize;
 
-                // Load only in a circle
-                if (relativeGridIndexes.magnitude > loadingRadius) continue;
+                // Load only in a circle around player
+                if ((tempChunkWorldPos - transform.position).magnitude > loadingRadius * chunkSize) continue;
 
                 // Skip already loaded chunks
                 if (loadedChunks.Any(el => el.gridIndex == tempChunk)) continue;
@@ -63,9 +64,11 @@ public class ChunkGenerator : MonoBehaviour {
                 MeshGenerator meshGenerator = new MeshGenerator(chunkObj, tempChunk);
                 meshGenerator.marchingCubesShader = marchingCubesShader;
                 meshGenerator.scale = Vector3.one * chunkSize;
-                meshGenerator.dotsPerUnit = dotsPerUnit;
+
                 meshGenerator.doInterpolate = doInterpolate;
                 meshGenerator.squishTerrain = squishTerrain;
+                meshGenerator.closeLateralSurface = false;
+                meshGenerator.dotsPerUnit = dotsPerUnit;
                 meshGenerator.threshold = threshold;
                 meshGenerator.perlinNoiseScale = perlinNoiseScale;
 

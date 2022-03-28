@@ -11,9 +11,11 @@ public class MeshGenerator {
 
     public ComputeShader marchingCubesShader;
     public Vector3 scale = new Vector3(1, 1, 1);
-    public int dotsPerUnit = 1;
+
     public bool doInterpolate = true;
     public bool squishTerrain = true;
+    public bool closeLateralSurface = true;
+    public int dotsPerUnit = 1;
     public float threshold = 0.5f;
     public float perlinNoiseScale = 0.26f;
 
@@ -48,15 +50,17 @@ public class MeshGenerator {
 
         marchingCubesShader.SetBuffer(0, "triangleBuffer", triangleBuffer);
         marchingCubesShader.SetBool("doInterpolate", doInterpolate);
+        marchingCubesShader.SetBool("squishTerrain", squishTerrain);
+        marchingCubesShader.SetBool("closeLateralSurface", closeLateralSurface);
+
         marchingCubesShader.SetFloat("surfaceValue", threshold);
         marchingCubesShader.SetFloat("perlinNoiseScale", perlinNoiseScale);
         marchingCubesShader.SetFloat("dotDistance", dotDistance);
-        marchingCubesShader.SetBool("squishTerrain", squishTerrain);
         marchingCubesShader.SetInts("dotsPerAxis", dotsPerAxis.x, dotsPerAxis.y, dotsPerAxis.z);
-        marchingCubesShader.SetFloats("trianglePositionOffset",cubeCornerOffset.x, cubeCornerOffset.y, cubeCornerOffset.z);
+        marchingCubesShader.SetFloats("trianglePositionOffset", cubeCornerOffset.x, cubeCornerOffset.y, cubeCornerOffset.z);
         marchingCubesShader.SetFloats("perlinPositionOffset", perlinPositionOffset.x, perlinPositionOffset.y, perlinPositionOffset.z);
 
-        marchingCubesShader.Dispatch(0, Mathf.CeilToInt(dotsPerAxis.x / 8), Mathf.CeilToInt(dotsPerAxis.y / 8), Mathf.CeilToInt(dotsPerAxis.z / 8));
+        marchingCubesShader.Dispatch(0, 1 + (dotsPerAxis.x / 8), 1 + (dotsPerAxis.y / 8), 1 + (dotsPerAxis.z / 8));
 
         int triangleCount = GetAppendCount(triangleBuffer);
         triangleBuffer.GetData(surfaceTriangles);
