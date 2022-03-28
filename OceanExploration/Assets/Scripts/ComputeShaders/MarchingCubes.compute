@@ -315,13 +315,13 @@ float3 InterpolatePoints(float3 p1, float3 p2, float p1Value, float p2Value) {
 	if (!doInterpolate) {
 		return (p1 + p2) / 2;
 	}
-	if (p1Value > p2Value) {
-        // Means p1 is inside the volume
-		return p1 + mul((p1 - p2), 1.0f / (p1Value - p2Value)) * clamp(surfaceValue - p1Value, 0, p1Value - p2Value);
+	if (p1Value < p2Value) {
+		// Means p2 is inside the volume
+		return p1 + mul((p2 - p1), 1.0f * clamp(surfaceValue - p1Value, 0, p2Value - p1Value) / (p2Value - p1Value));
 	}
-
-    // Means p2 is inside the volume
-	return p2 + mul((p2 - p1), 1.0f / (p2Value - p1Value)) * clamp(surfaceValue - p2Value, 0, p2Value - p1Value);
+	
+	// Means p1 is inside the volume
+	return p2 + mul((p1 - p2), 1.0f * clamp(surfaceValue - p2Value, 0, p1Value - p2Value) / (p1Value - p2Value));
 }
 
 // Returns true if the point is on the outer surface
