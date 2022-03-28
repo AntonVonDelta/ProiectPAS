@@ -4,8 +4,6 @@ using System.Linq;
 using UnityEngine;
 
 public class ChunkGenerator : MonoBehaviour {
-    public GameObject terrainChunkPrefab;
-
     [Header("Chunk parameters")]
     [Tooltip("The size of a cube")]
     public int chunkSize = 20;
@@ -84,6 +82,8 @@ public class ChunkGenerator : MonoBehaviour {
                 meshGenerator.dotsPerUnit = dotsPerUnit;
                 meshGenerator.threshold = threshold;
                 meshGenerator.perlinNoiseScale = perlinNoiseScale;
+
+                meshGenerator.SetObjectMesh();
 
                 loadedChunks.Add(new Chunk { gridIndex = tempChunk, chunkObject = chunkObj });
             }
