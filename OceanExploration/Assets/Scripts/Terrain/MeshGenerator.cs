@@ -70,8 +70,8 @@ public class MeshGenerator {
         Dictionary<Vector3, int> uniqueVertexes = new Dictionary<Vector3, int>();
         List<Vector3> vertices = new List<Vector3>();
         List<int> triangles = new List<int>();
-        for (int i = 0; i < surfaceTriangles.Length; i++) {
-            int vertexIndex = 0;
+        for (int i = 0; i < triangleCount; i++) {
+            int vertexIndex;
 
             // Here order of triangles is changed in order for culling to work
             if (uniqueVertexes.TryGetValue(surfaceTriangles[i].p1, out vertexIndex)) {
@@ -109,7 +109,7 @@ public class MeshGenerator {
         mesh.vertices = vertices.ToArray();
         mesh.triangles = triangles.ToArray();
         mesh.RecalculateNormals();
-        //mesh.RecalculateBounds();
+        mesh.RecalculateBounds();
     }
 
     //https://sites.google.com/site/aliadevlog/counting-buffers-in-directcompute
@@ -117,7 +117,6 @@ public class MeshGenerator {
         ComputeBuffer countBuffer = new ComputeBuffer(1, sizeof(int), ComputeBufferType.IndirectArguments);
         ComputeBuffer.CopyCount(appendBuffer, countBuffer, 0);
 
-        Debug.Log("Copy buffer : " + countBuffer.count);
         int[] counter = new int[1] { 0 };
         countBuffer.GetData(counter);
         countBuffer.Dispose();

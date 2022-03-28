@@ -13,6 +13,7 @@ public class ChunkGenerator : MonoBehaviour {
     [Tooltip("The radius around the player where chunks are loaded")]
     public int loadingRadius = 2;
     public bool refresh = false;
+    public bool countTotalVertexes = false;
 
     [Header("Terrain generation params")]
     public ComputeShader marchingCubesShader;
@@ -23,7 +24,7 @@ public class ChunkGenerator : MonoBehaviour {
     public float perlinNoiseScale = 0.26f;
 
     struct Chunk {
-        public GameObject origin;
+        public GameObject chunkObject;
         public Vector3Int gridIndex;
     };
     private Stack<GameObject> cachedObjects = new Stack<GameObject>();
@@ -45,8 +46,8 @@ public class ChunkGenerator : MonoBehaviour {
 
             if (!refresh && (tempChunkWorldPos - transform.position).magnitude <= loadingRadius * chunkSize) continue;
 
-            el.origin.SetActive(false);
-            cachedObjects.Push(el.origin);
+            el.chunkObject.SetActive(false);
+            cachedObjects.Push(el.chunkObject);
             loadedChunks.RemoveAt(i);
         }
         refresh = false;
@@ -84,10 +85,18 @@ public class ChunkGenerator : MonoBehaviour {
                 meshGenerator.threshold = threshold;
                 meshGenerator.perlinNoiseScale = perlinNoiseScale;
 
-                meshGenerator.SetObjectMesh();
-
-                loadedChunks.Add(new Chunk { gridIndex = tempChunk, origin = chunkObj });
+                loadedChunks.Add(new Chunk { gridIndex = tempChunk, chunkObject = chunkObj });
             }
+        }
+
+        if (countTotalVertexes) {
+            countTotalVertexes = false;
+
+            ulong vertexes = 0;
+            for(int i = 0; i < loadedChunks.Count; i++) {
+                vertexes += (ulong)loadedChunks[i].chunkObject.GetComponent<MeshFilter>().mesh.vertices.Length;
+            }
+            Debug.Log($"Counted vertexes:  {vertexes}");
         }
     }
 }
