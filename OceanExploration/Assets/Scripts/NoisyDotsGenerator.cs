@@ -13,6 +13,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
     public ComputeShader marchingCubesShader;
     public int dotsPerUnit = 1;
     public Vector3 scale = new Vector3(1, 1, 1);
+    public bool doInterpolate = true;
     public bool squishTerrain = true;
     public bool showGizmo = false;
     public float threshold = 0.5f;
@@ -67,6 +68,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
         triangleBuffer.SetCounterValue(0);
 
         marchingCubesShader.SetBuffer(0, "triangleBuffer", triangleBuffer);
+        marchingCubesShader.SetBool("doInterpolate", doInterpolate);
         marchingCubesShader.SetFloat("surfaceValue", threshold);
         marchingCubesShader.SetFloat("perlinNoiseScale", perlinNoiseScale);
         marchingCubesShader.SetFloat("dotDistance", dotDistance);
@@ -98,6 +100,16 @@ public class NoisyDotsGenerator : MonoBehaviour {
                 uniqueVertexes.Add(surfaceTriangles[i].p1, newVertexIndex);
             }
 
+            if (uniqueVertexes.TryGetValue(surfaceTriangles[i].p3, out vertexIndex)) {
+                triangles.Add(vertexIndex);
+            } else {
+                int newVertexIndex = vertices.Count;
+
+                vertices.Add(surfaceTriangles[i].p3);
+                triangles.Add(newVertexIndex);
+                uniqueVertexes.Add(surfaceTriangles[i].p3, newVertexIndex);
+            }
+
             if (uniqueVertexes.TryGetValue(surfaceTriangles[i].p2, out vertexIndex)) {
                 triangles.Add(vertexIndex);
             } else {
@@ -108,15 +120,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
                 uniqueVertexes.Add(surfaceTriangles[i].p2, newVertexIndex);
             }
 
-            if (uniqueVertexes.TryGetValue(surfaceTriangles[i].p3, out vertexIndex)) {
-                triangles.Add(vertexIndex);
-            } else {
-                int newVertexIndex = vertices.Count;
-
-                vertices.Add(surfaceTriangles[i].p3);
-                triangles.Add(newVertexIndex);
-                uniqueVertexes.Add(surfaceTriangles[i].p3, newVertexIndex);
-            }
+            
         }
 
         mesh.Clear();

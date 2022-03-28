@@ -297,6 +297,7 @@ static int2 edgeToVertexIndexes[] = {
 
 
 AppendStructuredBuffer<Triangle> triangleBuffer;
+bool doInterpolate;
 float surfaceValue;
 float perlinNoiseScale;
 float dotDistance;
@@ -311,7 +312,9 @@ float3 InterpolatePoints(float3 p1, float3 p2, float p1Value, float p2Value) {
 	if (abs(p2Value - surfaceValue) < 0.00001f) {
 		return p2;
 	}
-	
+	if (!doInterpolate) {
+		return (p1 + p2) / 2;
+	}
 	if (p1Value > p2Value) {
         // Means p1 is inside the volume
 		return p1 + mul((p1 - p2), 1.0f / (p1Value - p2Value)) * clamp(surfaceValue - p1Value, 0, p1Value - p2Value);
@@ -330,11 +333,11 @@ bool IsPointOnSurface(uint3 index) {
 	if (index.x == 0)
 		return true;
 
-	if (index.z == dotsPerAxis.z - 1)
+	if (index.z == dotsPerAxis.z)
 		return true;
-	if (index.y == dotsPerAxis.y - 1)
+	if (index.y == dotsPerAxis.y)
 		return true;
-	if (index.x == dotsPerAxis.x - 1)
+	if (index.x == dotsPerAxis.x)
 		return true;
 	return false;
 }
@@ -344,7 +347,7 @@ bool IsPointOnSurface(uint3 index) {
 void CSMain(uint3 executionId : SV_DispatchThreadID) {
 	
 	// Do not cross the boundaries
-	if (any(executionId + uint3(1, 1, 1) >= dotsPerAxis))
+	if (any(executionId + uint3(1, 1, 1) > dotsPerAxis))
 		return;
 	
 	float3 localSpacePos = mul(executionId, dotDistance);
@@ -369,7 +372,7 @@ void CSMain(uint3 executionId : SV_DispatchThreadID) {
 		//}
 
 		
-		float squishFactor = squishTerrain * lerp(1.0f, 0.0f, (cornerPosition[i].y - 0) / (dotsPerAxis.y * dotDistance - 0)) + (1 - squishTerrain)*1;
+		float squishFactor = squishTerrain * lerp(1.0f, 0.0f, (cornerPosition[i].y - 0) / (dotsPerAxis.y * dotDistance - 0)) + (1 - squishTerrain) * 1;
 		bool onSurface = IsPointOnSurface(executionId + cubeIndexes[i]);
 		cornerValues[i] = onSurface * (surfaceValue - 1) + (1 - onSurface) * squishFactor * noise(mul(cornerPosition[i], perlinNoiseScale));
 		
