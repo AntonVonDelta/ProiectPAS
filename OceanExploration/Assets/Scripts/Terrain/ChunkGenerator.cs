@@ -12,6 +12,7 @@ public class ChunkGenerator : MonoBehaviour {
 
     [Tooltip("The radius around the player where chunks are loaded")]
     public int loadingRadius = 2;
+    public bool refresh = false;
 
     [Header("Terrain generation params")]
     public ComputeShader marchingCubesShader;
@@ -42,11 +43,12 @@ public class ChunkGenerator : MonoBehaviour {
             var el = loadedChunks[i];
             Vector3 tempChunkWorldPos = el.gridIndex * chunkSize;
 
-            if ((tempChunkWorldPos - transform.position).magnitude <= loadingRadius * chunkSize) continue;
+            if (!refresh && (tempChunkWorldPos - transform.position).magnitude <= loadingRadius * chunkSize) continue;
 
             Destroy(el.origin);
             loadedChunks.RemoveAt(i);
         }
+        refresh = false;
 
         for (int i = -loadingRadius; i < loadingRadius + 1; i++) {
             for (int j = -loadingRadius; j < loadingRadius + 1; j++) {
@@ -60,7 +62,10 @@ public class ChunkGenerator : MonoBehaviour {
                 // Skip already loaded chunks
                 if (loadedChunks.Any(el => el.gridIndex == tempChunk)) continue;
 
-                GameObject chunkObj = Instantiate(terrainChunkPrefab, tempChunkWorldPos, Quaternion.identity);
+                GameObject chunkObj = new GameObject("MeshFab", typeof(MeshRenderer), typeof(MeshFilter));
+                chunkObj.AddComponent<MeshRenderer>().material = new Material(Shader.Find("Diffuse"));
+                chunkObj.transform.position = tempChunkWorldPos + new Vector3(0, chunkSize / 2, 0);
+              
                 MeshGenerator meshGenerator = new MeshGenerator(chunkObj, tempChunk);
                 meshGenerator.marchingCubesShader = marchingCubesShader;
                 meshGenerator.scale = Vector3.one * chunkSize;

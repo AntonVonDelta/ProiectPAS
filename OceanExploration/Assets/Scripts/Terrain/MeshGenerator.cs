@@ -65,8 +65,6 @@ public class MeshGenerator {
 
         int triangleCount = GetAppendCount(triangleBuffer);
         triangleBuffer.GetData(surfaceTriangles);
-
-        Debug.Log($"Shader dispatched with {triangleCount} triangles");
         triangleBuffer.Dispose();
 
         Dictionary<Vector3, int> uniqueVertexes = new Dictionary<Vector3, int>();

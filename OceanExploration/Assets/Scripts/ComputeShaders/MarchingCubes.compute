@@ -328,6 +328,10 @@ float3 InterpolatePoints(float3 p1, float3 p2, float p1Value, float p2Value) {
 
 // Returns true if the point is on the outer surface
 bool IsPointOnSurface(uint3 index) {
+	// We want to cap off the structure even though the flag closeLateralSurface was set
+	if (index.y == dotsPerAxis.y)
+		return true;
+	
 	if (!closeLateralSurface)
 		return false;
 	
@@ -340,8 +344,7 @@ bool IsPointOnSurface(uint3 index) {
 
 	if (index.z == dotsPerAxis.z)
 		return true;
-	if (index.y == dotsPerAxis.y)
-		return true;
+	
 	if (index.x == dotsPerAxis.x)
 		return true;
 	return false;
@@ -377,7 +380,7 @@ void CSMain(uint3 executionId : SV_DispatchThreadID) {
 		//}
 
 		
-		float squishFactor = squishTerrain * lerp(1.0f, 0.0f, (cornerPosition[i].y - 0) / (dotsPerAxis.y * dotDistance - 0)) + (1 - squishTerrain) * 1;
+		float squishFactor = squishTerrain * lerp(1.0f, 0.2f, (cornerPosition[i].y - 0) / (dotsPerAxis.y * dotDistance - 0)) + (1 - squishTerrain) * 1;
 		bool onSurface = IsPointOnSurface(executionId + cubeIndexes[i]);
 		cornerValues[i] = onSurface * (surfaceValue - 1) + (1 - onSurface) * squishFactor * noise(mul(perlinPositionOffset + cornerPosition[i], perlinNoiseScale));
 		

@@ -404,6 +404,9 @@ MonoBehaviour:
   refresh: 0
   terraceHeight: 4
   groundHeight: 1
+  prevThreshold: 0
+  prevPerlinNoiseScale: 0
+  mesh: {fileID: 0}
 --- !u!1 &2110026083
 GameObject:
   m_ObjectHideFlags: 0
@@ -439,8 +442,9 @@ MonoBehaviour:
   terrainChunkPrefab: {fileID: 7804845767556229716, guid: 30625485605122841add78d53e2b40be, type: 3}
   chunkSize: 10
   loadingRadius: 4
+  refresh: 0
   marchingCubesShader: {fileID: 7200000, guid: 1723cc3632efc1346a230e6d471483c0, type: 3}
-  dotsPerUnit: 3
+  dotsPerUnit: 2
   doInterpolate: 1
   squishTerrain: 1
   threshold: 0.4
