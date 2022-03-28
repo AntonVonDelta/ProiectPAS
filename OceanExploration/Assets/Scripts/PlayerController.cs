@@ -31,8 +31,10 @@ public class PlayerController : MonoBehaviour {
 
                 // We inverse the Y value because Unity has the viewport inversed in comparison to the screen space
                 float deltaAngleY = Mathf.Rad2Deg * Mathf.Atan2(-viewportPositionDelta.y, playerCamera.nearClipPlane);
-
-                playerCamera.transform.Rotate(deltaAngleY, deltaAngleX, 0, Space.World);
+                
+                // x local, y global...can't see it? Well it means you suck at rotations
+                playerCamera.transform.Rotate(deltaAngleY, 0, 0, Space.Self);
+                playerCamera.transform.Rotate(0, deltaAngleX, 0, Space.World);
 
                 // Only set last position when the difference is significant otherwise we risk adding small errors to the variable and miss them
                 lastMousePos = Input.mousePosition;
