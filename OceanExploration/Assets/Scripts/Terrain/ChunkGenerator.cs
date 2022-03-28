@@ -14,6 +14,7 @@ public class ChunkGenerator : MonoBehaviour {
     public int loadingRadius = 2;
 
     [Header("Terrain generation params")]
+    public ComputeShader marchingCubesShader;
     public int dotsPerUnit = 1;
     public bool doInterpolate = true;
     public bool squishTerrain = true;
@@ -56,10 +57,11 @@ public class ChunkGenerator : MonoBehaviour {
                 if (relativeGridIndexes.magnitude > loadingRadius) continue;
 
                 // Skip already loaded chunks
-                if (loadedChunks.Any(el => el.gridIndex == currentChunkGrid + tempChunk)) continue;
+                if (loadedChunks.Any(el => el.gridIndex == tempChunk)) continue;
 
                 GameObject chunkObj = Instantiate(terrainChunkPrefab, tempChunkWorldPos, Quaternion.identity);
                 MeshGenerator meshGenerator = new MeshGenerator(chunkObj, tempChunk);
+                meshGenerator.marchingCubesShader = marchingCubesShader;
                 meshGenerator.scale = Vector3.one * chunkSize;
                 meshGenerator.dotsPerUnit = dotsPerUnit;
                 meshGenerator.doInterpolate = doInterpolate;
@@ -69,7 +71,7 @@ public class ChunkGenerator : MonoBehaviour {
 
                 meshGenerator.SetObjectMesh();
 
-                loadedChunks.Add(new Chunk { gridIndex = currentChunkGrid + tempChunk, origin = chunkObj });
+                loadedChunks.Add(new Chunk { gridIndex = tempChunk, origin = chunkObj });
             }
         }
     }

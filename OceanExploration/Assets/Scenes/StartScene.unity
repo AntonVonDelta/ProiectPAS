@@ -439,11 +439,12 @@ MonoBehaviour:
   terrainChunkPrefab: {fileID: 7804845767556229716, guid: 30625485605122841add78d53e2b40be, type: 3}
   chunkSize: 20
   loadingRadius: 2
-  dotsPerUnit: 1
+  marchingCubesShader: {fileID: 7200000, guid: 1723cc3632efc1346a230e6d471483c0, type: 3}
+  dotsPerUnit: 3
   doInterpolate: 1
   squishTerrain: 1
-  threshold: 0.5
-  perlinNoiseScale: 0.26
+  threshold: 0.4
+  perlinNoiseScale: 0.2
 --- !u!136 &2110026085
 CapsuleCollider:
   m_ObjectHideFlags: 0

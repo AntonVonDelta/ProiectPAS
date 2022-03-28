@@ -56,7 +56,7 @@ public class MeshGenerator {
         marchingCubesShader.SetFloats("trianglePositionOffset",cubeCornerOffset.x, cubeCornerOffset.y, cubeCornerOffset.z);
         marchingCubesShader.SetFloats("perlinPositionOffset", perlinPositionOffset.x, perlinPositionOffset.y, perlinPositionOffset.z);
 
-        marchingCubesShader.Dispatch(0, 1 + Mathf.CeilToInt(dotsPerAxis.x / 8), 1 + Mathf.CeilToInt(dotsPerAxis.y / 8), 1 + Mathf.CeilToInt(dotsPerAxis.z / 8));
+        marchingCubesShader.Dispatch(0, Mathf.CeilToInt(dotsPerAxis.x / 8), Mathf.CeilToInt(dotsPerAxis.y / 8), Mathf.CeilToInt(dotsPerAxis.z / 8));
 
         int triangleCount = GetAppendCount(triangleBuffer);
         triangleBuffer.GetData(surfaceTriangles);
