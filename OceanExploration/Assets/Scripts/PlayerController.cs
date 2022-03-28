@@ -16,7 +16,8 @@ public class PlayerController : MonoBehaviour {
         upwardsOfVehicleReference = transform.InverseTransformVector(Vector3.up);
 
         distanceReference = (playerCamera.transform.position - transform.position).magnitude;
-
+        
+        //Cursor.lockState = CursorLockMode.Locked;
         //Cursor.visible = false;
     }
 
@@ -44,14 +45,12 @@ public class PlayerController : MonoBehaviour {
                 
                 // Restrict X axis angle
                 Vector3 localEulerAngles = transform.localEulerAngles;
-                localEulerAngles.x = Mathf.Clamp(localEulerAngles.x, -79, 79);
+                localEulerAngles.x = Mathf.Clamp(localEulerAngles.x, 90-60, 90+60);
                 transform.localEulerAngles = localEulerAngles;
 
                 // Only set last position when the difference is significant otherwise we risk adding small errors to the variable and miss them
                 lastMousePos = Input.mousePosition;
 
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.lockState = CursorLockMode.None;
             }
         }
         if (Input.GetKey(KeyCode.A)) {
