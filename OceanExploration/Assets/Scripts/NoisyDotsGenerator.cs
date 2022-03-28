@@ -27,7 +27,24 @@ public class NoisyDotsGenerator : MonoBehaviour {
     Mesh mesh;
 
 
+    public class Vector3Comparer : IEqualityComparer<Vector3> {
+        public bool Equals(Vector3 x, Vector3 y) {
+            if(Mathf.Abs(x.x-y.x)<0.5f && Mathf.Abs(x.y - y.y) < 0.5f && Mathf.Abs(x.z - y.z) < 0.5f) {
+                return true;
+            }
+            return false;
+        }
 
+        public int GetHashCode(Vector3 obj) {
+            int XMax = 100;
+            int YMax = 100;
+            int ZMax = 100;
+            int floatScaling = 10;
+
+            // Calculate the liniar indiex on a cube with the given size
+            return (int)(floatScaling * obj.x) + (int)(floatScaling * obj.y) * XMax + (int)(floatScaling*obj.z) * YMax * XMax;
+        }
+    }
 
     // Start is called before the first frame update
     void Start() {
@@ -82,18 +99,41 @@ public class NoisyDotsGenerator : MonoBehaviour {
         Debug.Log($"Shader dispatched with {triangleCount} triangles");
         triangleBuffer.Dispose();
 
-
+        Dictionary<Vector3, int> uniqueVertexes = new Dictionary<Vector3, int>();
         List<Vector3> vertices = new List<Vector3>();
         List<int> triangles = new List<int>();
         for (int i = 0; i < surfaceTriangles.Length; i++) {
-            vertices.Add(surfaceTriangles[i].p1);
-            vertices.Add(surfaceTriangles[i].p2);
-            vertices.Add(surfaceTriangles[i].p3);
+            int vertexIndex = 0;
 
-            // Reverse order here for culling to work
-            triangles.Add(i * 3);
-            triangles.Add(i * 3 + 2);
-            triangles.Add(i * 3 + 1);
+            if (uniqueVertexes.TryGetValue(surfaceTriangles[i].p1, out vertexIndex)) {
+                triangles.Add(vertexIndex);
+            } else {
+                int newVertexIndex = vertices.Count;
+
+                vertices.Add(surfaceTriangles[i].p1);
+                triangles.Add(newVertexIndex);
+                uniqueVertexes.Add(surfaceTriangles[i].p1, newVertexIndex);
+            }
+
+            if (uniqueVertexes.TryGetValue(surfaceTriangles[i].p2, out vertexIndex)) {
+                triangles.Add(vertexIndex);
+            } else {
+                int newVertexIndex = vertices.Count;
+
+                vertices.Add(surfaceTriangles[i].p2);
+                triangles.Add(newVertexIndex);
+                uniqueVertexes.Add(surfaceTriangles[i].p2, newVertexIndex);
+            }
+
+            if (uniqueVertexes.TryGetValue(surfaceTriangles[i].p3, out vertexIndex)) {
+                triangles.Add(vertexIndex);
+            } else {
+                int newVertexIndex = vertices.Count;
+
+                vertices.Add(surfaceTriangles[i].p3);
+                triangles.Add(newVertexIndex);
+                uniqueVertexes.Add(surfaceTriangles[i].p3, newVertexIndex);
+            }
         }
 
         mesh.Clear();
@@ -102,6 +142,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
         mesh.RecalculateNormals();
         mesh.RecalculateBounds();
     }
+
     //https://sites.google.com/site/aliadevlog/counting-buffers-in-directcompute
     private static int GetAppendCount(ComputeBuffer appendBuffer) {
         ComputeBuffer countBuffer = new ComputeBuffer(1, sizeof(int), ComputeBufferType.IndirectArguments);
