@@ -27,24 +27,7 @@ public class NoisyDotsGenerator : MonoBehaviour {
     Mesh mesh;
 
 
-    public class Vector3Comparer : IEqualityComparer<Vector3> {
-        public bool Equals(Vector3 x, Vector3 y) {
-            if(Mathf.Abs(x.x-y.x)<0.5f && Mathf.Abs(x.y - y.y) < 0.5f && Mathf.Abs(x.z - y.z) < 0.5f) {
-                return true;
-            }
-            return false;
-        }
 
-        public int GetHashCode(Vector3 obj) {
-            int XMax = 100;
-            int YMax = 100;
-            int ZMax = 100;
-            int floatScaling = 10;
-
-            // Calculate the liniar indiex on a cube with the given size
-            return (int)(floatScaling * obj.x) + (int)(floatScaling * obj.y) * XMax + (int)(floatScaling*obj.z) * YMax * XMax;
-        }
-    }
 
     // Start is called before the first frame update
     void Start() {
