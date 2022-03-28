@@ -86,9 +86,9 @@ public class ChunkGenerator : MonoBehaviour {
 
                 meshGenerator.SetObjectMesh();
 
-                if (chunkObj.GetComponent<MeshCollider>().sharedMesh == null) {
-                    chunkObj.GetComponent<MeshCollider>().sharedMesh = chunkObj.GetComponent<MeshFilter>().sharedMesh;
-                }
+                // Set collision mesh
+                chunkObj.GetComponent<MeshCollider>().sharedMesh = chunkObj.GetComponent<MeshFilter>().sharedMesh;
+
                 loadedChunks.Add(new Chunk { gridIndex = tempChunk, chunkObject = chunkObj });
             }
         }
@@ -97,7 +97,7 @@ public class ChunkGenerator : MonoBehaviour {
             countTotalVertexes = false;
 
             ulong vertexes = 0;
-            for(int i = 0; i < loadedChunks.Count; i++) {
+            for (int i = 0; i < loadedChunks.Count; i++) {
                 vertexes += (ulong)loadedChunks[i].chunkObject.GetComponent<MeshFilter>().mesh.vertices.Length;
             }
             Debug.Log($"Counted vertexes:  {vertexes}");

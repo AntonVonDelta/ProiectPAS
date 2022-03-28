@@ -5,13 +5,15 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour {
     public Camera playerCamera;
-    public float moveForceMagnitude;
+    public float moveForceMagnitude = 5f;
+    public float rotateAmount = 2.5f;
+    public float lookSpeed = 2f;
 
     private Rigidbody rb;
     private Vector3 forwardOfVehiclerReference;
     private Vector3 upwardsOfVehicleReference;
+    private Vector3 rightOfVehicleReference;
     private float distanceReference;
-    private Vector3 lastMousePos;
 
     // Start is called before the first frame update
     void Start() {
@@ -19,59 +21,41 @@ public class PlayerController : MonoBehaviour {
 
         forwardOfVehiclerReference = transform.InverseTransformVector(Vector3.forward);
         upwardsOfVehicleReference = transform.InverseTransformVector(Vector3.up);
+        rightOfVehicleReference = transform.InverseTransformVector(Vector3.right);
         distanceReference = (playerCamera.transform.position - transform.position).magnitude;
-        
-        //Cursor.lockState = CursorLockMode.Locked;
-        //Cursor.visible = false;
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
-    // Update is called once per frame
-    void Update() {
 
+    private void FixedUpdate() {
         // Move camera in the direction the vehicle is pointing
         Vector3 topPosition = transform.position + transform.TransformVector(forwardOfVehiclerReference * distanceReference);
         playerCamera.transform.position = topPosition;
         playerCamera.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(forwardOfVehiclerReference), transform.TransformDirection(upwardsOfVehicleReference));
 
         if (IsMouseOverGameWindow()) {
-            Vector3 positionDelta = Input.mousePosition - lastMousePos;
-            if (positionDelta.sqrMagnitude > Mathf.Epsilon) {
-                Vector3 viewportPositionDelta = playerCamera.ScreenToViewportPoint(Input.mousePosition) - playerCamera.ScreenToViewportPoint(lastMousePos);
+            Vector3 positionDelta = new Vector3(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y")) * lookSpeed;
+            Vector3 viewportPositionDelta = playerCamera.ScreenToViewportPoint(positionDelta);
 
-                float deltaAngleX = Mathf.Rad2Deg * Mathf.Atan2(viewportPositionDelta.x, playerCamera.nearClipPlane);
+            float deltaAngleX = Mathf.Rad2Deg * Mathf.Atan2(viewportPositionDelta.x, playerCamera.nearClipPlane);
+            // We inverse the Y value because Unity has the viewport inversed in comparison to the screen space
+            float deltaAngleY = Mathf.Rad2Deg * Mathf.Atan2(-viewportPositionDelta.y, playerCamera.nearClipPlane);
 
-                // We inverse the Y value because Unity has the viewport inversed in comparison to the screen space
-                float deltaAngleY = Mathf.Rad2Deg * Mathf.Atan2(-viewportPositionDelta.y, playerCamera.nearClipPlane);
+            // x local, y global...can't see it? Well it means you suck at rotations
+            transform.Rotate(deltaAngleY, 0, 0, Space.Self);
+            transform.Rotate(0, deltaAngleX, 0, Space.World);
 
-                // x local, y global...can't see it? Well it means you suck at rotations
-                transform.Rotate(deltaAngleY, 0, 0, Space.Self);
-                transform.Rotate(0, deltaAngleX, 0, Space.World);
-                
-                // Restrict X axis angle
-                Vector3 localEulerAngles = transform.localEulerAngles;
-                localEulerAngles.x = Mathf.Clamp(localEulerAngles.x, 90-60, 90+60);
-                transform.localEulerAngles = localEulerAngles;
-
-                // Only set last position when the difference is significant otherwise we risk adding small errors to the variable and miss them
-                lastMousePos = Input.mousePosition;
-
-            }
+            // Restrict X axis angle
+            Vector3 localEulerAngles = transform.localEulerAngles;
+            localEulerAngles.x = Mathf.Clamp(localEulerAngles.x, 90 - 60, 90 + 60);
+            transform.localEulerAngles = localEulerAngles;
         }
 
-        if (Input.GetKey(KeyCode.W)) {
-            rb.AddRelativeForce(forwardOfVehiclerReference * moveForceMagnitude);
-        }
+        rb.AddRelativeForce(Input.GetAxis("Vertical") * forwardOfVehiclerReference * moveForceMagnitude);
+        transform.Rotate(Vector3.up, Input.GetAxis("Horizontal") * rotateAmount, Space.World);
     }
-
-    private void FixedUpdate() {
-        //DrawArrow.ForGizmo()
-        // Self straighting nehaviour
-        rb.AddForceAtPosition(-Physics.gravity * rb.mass, transform.position + transform.TransformDirection(upwardsOfVehicleReference),ForceMode.Force);
-    }
-    //private void OnGUI() {
-    //    Handles.color = Color.black;
-    //    Handles.ArrowHandleCap(0, transform.position, Quaternion.LookRotation(transform.TransformDirection(upwardsOfVehicleReference)), 10, EventType.Repaint);
-    //}
 
 
     bool IsMouseOverGameWindow() {
