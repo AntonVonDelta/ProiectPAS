@@ -5,8 +5,11 @@ using UnityEngine;
 
 public class ChunkGenerator : MonoBehaviour {
     [Header("Chunk parameters")]
-    [Tooltip("The size of a cube")]
-    public int chunkSize = 20;
+    [Tooltip("The size of the base")]
+    public int chunkSize = 10;
+
+    [Tooltip("The height of a chunk")]
+    public int heightSize = 30;
 
     [Tooltip("The radius around the player where chunks are loaded")]
     public int loadingRadius = 2;
@@ -71,11 +74,11 @@ public class ChunkGenerator : MonoBehaviour {
                     chunkObj.AddComponent<MeshRenderer>().material = new Material(Shader.Find("Diffuse"));
                     chunkObj.AddComponent<MeshCollider>();
                 }
-                chunkObj.transform.position = tempChunkWorldPos + new Vector3(0, chunkSize / 2, 0);
+                chunkObj.transform.position = tempChunkWorldPos + new Vector3(0, heightSize / 2, 0);
 
                 MeshGenerator meshGenerator = new MeshGenerator(chunkObj, tempChunk);
                 meshGenerator.marchingCubesShader = marchingCubesShader;
-                meshGenerator.scale = Vector3.one * chunkSize;
+                meshGenerator.scale = new Vector3(chunkSize, heightSize, chunkSize);
 
                 meshGenerator.doInterpolate = doInterpolate;
                 meshGenerator.squishTerrain = squishTerrain;
