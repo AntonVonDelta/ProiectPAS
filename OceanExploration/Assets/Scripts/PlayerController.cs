@@ -14,7 +14,7 @@ public class PlayerController : MonoBehaviour {
     private Vector3 forwardOfVehiclerReference;
     private Vector3 upwardsOfVehicleReference;
     private Vector3 rightOfVehicleReference;
-    private float positionOffset;
+    private Vector3 positionOffset;
 
     private Vector3 cameraMovementVelocity = Vector3.zero;
 
@@ -25,7 +25,7 @@ public class PlayerController : MonoBehaviour {
         forwardOfVehiclerReference = transform.InverseTransformVector(Vector3.forward).normalized;
         upwardsOfVehicleReference = transform.InverseTransformVector(Vector3.up).normalized;
         rightOfVehicleReference = transform.InverseTransformVector(Vector3.right).normalized;
-        positionOffset = (playerCamera.transform.position - transform.position).magnitude;
+        positionOffset = transform.InverseTransformPoint(playerCamera.transform.position);
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -34,12 +34,16 @@ public class PlayerController : MonoBehaviour {
 
     private void FixedUpdate() {
         // Move camera to follow vehicle
-        playerCamera.transform.position = Vector3.SmoothDamp(playerCamera.transform.position, transform.position - transform.TransformDirection(forwardOfVehiclerReference) * positionOffset, ref cameraMovementVelocity, smoothTime);
+        Vector3 cameraWorldPos = transform.TransformPoint(positionOffset);
+        playerCamera.transform.position = Vector3.SmoothDamp(playerCamera.transform.position, cameraWorldPos, ref cameraMovementVelocity, smoothTime);
 
         // Move camera in the direction the vehicle is pointing
         //Vector3 topPosition = transform.position + transform.TransformVector(forwardOfVehiclerReference * distanceReference);
         //playerCamera.transform.position = topPosition;
-        playerCamera.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(forwardOfVehiclerReference), transform.TransformDirection(upwardsOfVehicleReference));
+        //playerCamera.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(forwardOfVehiclerReference), transform.TransformDirection(upwardsOfVehicleReference));
+
+        // Rotate camera
+        playerCamera.transform.LookAt(transform);
 
         if (IsMouseOverGameWindow()) {
             Vector3 positionDelta = new Vector3(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y")) * lookSpeed;
@@ -55,11 +59,11 @@ public class PlayerController : MonoBehaviour {
 
             // Restrict X axis angle
             Vector3 localEulerAngles = transform.localEulerAngles;
-            localEulerAngles.x = Mathf.Clamp(localEulerAngles.x, 10, 170);
+            localEulerAngles.x = Mathf.Clamp(localEulerAngles.x, 90 - 60, 90 + 60);
             transform.localEulerAngles = localEulerAngles;
         }
 
-        rb.AddForceAtPosition(Input.GetAxis("Vertical") * forwardOfVehiclerReference * moveForceMagnitude,-transform.TransformDirection(forwardOfVehiclerReference)*transform.localScale.z);
+        rb.AddForceAtPosition(Input.GetAxis("Vertical") * transform.TransformDirection(forwardOfVehiclerReference) * moveForceMagnitude, transform.position - transform.TransformDirection(forwardOfVehiclerReference) * transform.localScale.z);
         transform.Rotate(Vector3.up, Input.GetAxis("Horizontal") * rotateAmount, Space.World);
     }
 

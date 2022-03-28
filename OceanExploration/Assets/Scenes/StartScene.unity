@@ -293,7 +293,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.10190505, y: 5.149975, z: -2.3452697}
+  m_LocalPosition: {x: -0.10190505, y: 6.15, z: -4.07}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -333,8 +333,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a521338861d891344bd77547c30c481b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  chunkSize: 10
-  loadingRadius: 4
+  chunkSize: 20
+  loadingRadius: 3
   refresh: 0
   countTotalVertexes: 0
   marchingCubesShader: {fileID: 7200000, guid: 1723cc3632efc1346a230e6d471483c0, type: 3}
@@ -435,7 +435,8 @@ MonoBehaviour:
   playerCamera: {fileID: 963194227}
   moveForceMagnitude: 10
   rotateAmount: 2.5
-  lookSpeed: 45
+  lookSpeed: 10
+  smoothTime: 0.1
 --- !u!54 &2110026090
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -445,8 +446,8 @@ Rigidbody:
   m_GameObject: {fileID: 2110026083}
   serializedVersion: 2
   m_Mass: 1
-  m_Drag: 0.2
-  m_AngularDrag: 0.05
+  m_Drag: 2
+  m_AngularDrag: 1
   m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
