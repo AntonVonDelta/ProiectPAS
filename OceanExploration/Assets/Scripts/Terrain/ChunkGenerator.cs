@@ -62,7 +62,7 @@ public class ChunkGenerator : MonoBehaviour {
                 // Skip already loaded chunks
                 if (loadedChunks.Any(el => el.gridIndex == tempChunk)) continue;
 
-                GameObject chunkObj = new GameObject("MeshFab", typeof(MeshRenderer), typeof(MeshFilter));
+                GameObject chunkObj = new GameObject("MeshFab", typeof(MeshFilter));
                 chunkObj.AddComponent<MeshRenderer>().material = new Material(Shader.Find("Diffuse"));
                 chunkObj.transform.position = tempChunkWorldPos + new Vector3(0, chunkSize / 2, 0);
               
