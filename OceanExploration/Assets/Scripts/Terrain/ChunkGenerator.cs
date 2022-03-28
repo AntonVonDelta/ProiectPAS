@@ -69,6 +69,7 @@ public class ChunkGenerator : MonoBehaviour {
                 } else {
                     chunkObj = new GameObject($"MeshFab_{loadedChunks.Count}", typeof(MeshFilter));
                     chunkObj.AddComponent<MeshRenderer>().material = new Material(Shader.Find("Diffuse"));
+                    chunkObj.AddComponent<MeshCollider>();
                 }
                 chunkObj.transform.position = tempChunkWorldPos + new Vector3(0, chunkSize / 2, 0);
 
@@ -85,6 +86,9 @@ public class ChunkGenerator : MonoBehaviour {
 
                 meshGenerator.SetObjectMesh();
 
+                if (chunkObj.GetComponent<MeshCollider>().sharedMesh == null) {
+                    chunkObj.GetComponent<MeshCollider>().sharedMesh = chunkObj.GetComponent<MeshFilter>().sharedMesh;
+                }
                 loadedChunks.Add(new Chunk { gridIndex = tempChunk, chunkObject = chunkObj });
             }
         }

@@ -1,10 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour {
     public Camera playerCamera;
+    public float moveForceMagnitude;
 
+    private Rigidbody rb;
     private Vector3 forwardOfVehiclerReference;
     private Vector3 upwardsOfVehicleReference;
     private float distanceReference;
@@ -12,9 +15,10 @@ public class PlayerController : MonoBehaviour {
 
     // Start is called before the first frame update
     void Start() {
+        rb = GetComponent<Rigidbody>();
+
         forwardOfVehiclerReference = transform.InverseTransformVector(Vector3.forward);
         upwardsOfVehicleReference = transform.InverseTransformVector(Vector3.up);
-
         distanceReference = (playerCamera.transform.position - transform.position).magnitude;
         
         //Cursor.lockState = CursorLockMode.Locked;
@@ -53,10 +57,22 @@ public class PlayerController : MonoBehaviour {
 
             }
         }
-        if (Input.GetKey(KeyCode.A)) {
 
+        if (Input.GetKey(KeyCode.W)) {
+            rb.AddRelativeForce(forwardOfVehiclerReference * moveForceMagnitude);
         }
     }
+
+    private void FixedUpdate() {
+        //DrawArrow.ForGizmo()
+        // Self straighting nehaviour
+        rb.AddForceAtPosition(-Physics.gravity * rb.mass, transform.position + transform.TransformDirection(upwardsOfVehicleReference),ForceMode.Force);
+    }
+    //private void OnGUI() {
+    //    Handles.color = Color.black;
+    //    Handles.ArrowHandleCap(0, transform.position, Quaternion.LookRotation(transform.TransformDirection(upwardsOfVehicleReference)), 10, EventType.Repaint);
+    //}
+
 
     bool IsMouseOverGameWindow() {
         var viewport = playerCamera.ScreenToViewportPoint(Input.mousePosition);
