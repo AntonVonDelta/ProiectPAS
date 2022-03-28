@@ -349,15 +349,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   chunkSize: 10
   heightSize: 30
-  loadingRadius: 3
+  loadingRadius: 6
   refresh: 0
   countTotalVertexes: 0
   marchingCubesShader: {fileID: 7200000, guid: 1723cc3632efc1346a230e6d471483c0, type: 3}
   dotsPerUnit: 2
   doInterpolate: 1
   squishTerrain: 1
-  threshold: 0.4
-  perlinNoiseScale: 0.2
+  threshold: 0.55
+  perlinNoiseScale: 0.23
 --- !u!136 &2110026085
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -448,7 +448,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerCamera: {fileID: 963194227}
-  moveForceMagnitude: 10
+  moveForceMagnitude: 20
   rotateAmount: 2.5
   lookSpeed: 10
   smoothTime: 0.1
