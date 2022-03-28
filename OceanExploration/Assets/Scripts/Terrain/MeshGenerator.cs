@@ -34,11 +34,12 @@ public class MeshGenerator {
 
     // Sets the object's mesh to the gnerated one
     public void SetObjectMesh() {
-
         Vector3Int dotsPerAxis = Vector3Int.RoundToInt(scale * dotsPerUnit);
         float dotDistance = (float)1 / dotsPerUnit;
         Vector3 cubeCornerOffset = -scale / 2;
-        Vector3 perlinPositionOffset = gridIndex * dotsPerAxis; // perlin-scale independent offset aka applied before perlin scaling
+
+        // perlin-scale independent offset aka applied before perlin scaling
+        Vector3 perlinPositionOffset = new Vector3(gridIndex.x*scale.x, gridIndex.y * scale.y, gridIndex.z * scale.z); 
 
 
         // We create a compute buffer big enough to hold all possible triangles
