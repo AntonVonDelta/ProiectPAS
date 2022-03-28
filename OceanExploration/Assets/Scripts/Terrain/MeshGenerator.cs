@@ -109,7 +109,7 @@ public class MeshGenerator {
         mesh.vertices = vertices.ToArray();
         mesh.triangles = triangles.ToArray();
         mesh.RecalculateNormals();
-        mesh.RecalculateBounds();
+        //mesh.RecalculateBounds();
     }
 
     //https://sites.google.com/site/aliadevlog/counting-buffers-in-directcompute

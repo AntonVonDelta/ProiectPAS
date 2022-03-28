@@ -26,7 +26,7 @@ public class ChunkGenerator : MonoBehaviour {
         public GameObject origin;
         public Vector3Int gridIndex;
     };
-
+    private Stack<GameObject> cachedObjects = new Stack<GameObject>();
     private List<Chunk> loadedChunks = new List<Chunk>();
 
     // Start is called before the first frame update
@@ -45,7 +45,8 @@ public class ChunkGenerator : MonoBehaviour {
 
             if (!refresh && (tempChunkWorldPos - transform.position).magnitude <= loadingRadius * chunkSize) continue;
 
-            Destroy(el.origin);
+            el.origin.SetActive(false);
+            cachedObjects.Push(el.origin);
             loadedChunks.RemoveAt(i);
         }
         refresh = false;
@@ -62,10 +63,16 @@ public class ChunkGenerator : MonoBehaviour {
                 // Skip already loaded chunks
                 if (loadedChunks.Any(el => el.gridIndex == tempChunk)) continue;
 
-                GameObject chunkObj = new GameObject("MeshFab", typeof(MeshFilter));
-                chunkObj.AddComponent<MeshRenderer>().material = new Material(Shader.Find("Diffuse"));
+                GameObject chunkObj = null;
+                if (cachedObjects.Count() != 0) {
+                    chunkObj = cachedObjects.Pop();
+                    chunkObj.SetActive(true);
+                } else {
+                    chunkObj = new GameObject($"MeshFab_{loadedChunks.Count}", typeof(MeshFilter));
+                    chunkObj.AddComponent<MeshRenderer>().material = new Material(Shader.Find("Diffuse"));
+                }
                 chunkObj.transform.position = tempChunkWorldPos + new Vector3(0, chunkSize / 2, 0);
-              
+
                 MeshGenerator meshGenerator = new MeshGenerator(chunkObj, tempChunk);
                 meshGenerator.marchingCubesShader = marchingCubesShader;
                 meshGenerator.scale = Vector3.one * chunkSize;
