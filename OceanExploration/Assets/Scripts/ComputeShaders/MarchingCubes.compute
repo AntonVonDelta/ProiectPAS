@@ -304,6 +304,7 @@ float dotDistance;
 bool squishTerrain;
 uint3 dotsPerAxis;
 float3 trianglePositionOffset;
+float3 perlinPositionOffset;		// Offset to be added to the vertex BEFORE multiplying it by perlinScale
 
 float3 InterpolatePoints(float3 p1, float3 p2, float p1Value, float p2Value) {
 	if (abs(p1Value - surfaceValue) < 0.00001f) {
@@ -374,7 +375,7 @@ void CSMain(uint3 executionId : SV_DispatchThreadID) {
 		
 		float squishFactor = squishTerrain * lerp(1.0f, 0.0f, (cornerPosition[i].y - 0) / (dotsPerAxis.y * dotDistance - 0)) + (1 - squishTerrain) * 1;
 		bool onSurface = IsPointOnSurface(executionId + cubeIndexes[i]);
-		cornerValues[i] = onSurface * (surfaceValue - 1) + (1 - onSurface) * squishFactor * noise(mul(cornerPosition[i], perlinNoiseScale));
+		cornerValues[i] = onSurface * (surfaceValue - 1) + (1 - onSurface) * squishFactor * noise(mul(perlinPositionOffset + cornerPosition[i], perlinNoiseScale));
 		
 		bool onGround = cornerPosition[i].y == 0;
 		cornerValues[i] = onGround * (surfaceValue + 1) + (1 - onGround) * cornerValues[i];

@@ -28,8 +28,6 @@ public class NoisyDotsGenerator : MonoBehaviour {
     Mesh mesh;
 
 
-
-
     // Start is called before the first frame update
     void Start() {
         mesh = new Mesh();
@@ -73,10 +71,10 @@ public class NoisyDotsGenerator : MonoBehaviour {
         marchingCubesShader.SetFloat("perlinNoiseScale", perlinNoiseScale);
         marchingCubesShader.SetFloat("dotDistance", dotDistance);
         marchingCubesShader.SetBool("squishTerrain", squishTerrain);
-        marchingCubesShader.SetInts("dotsPerAxis", new int[] { dotsPerAxis.x, dotsPerAxis.y, dotsPerAxis.z });
-        marchingCubesShader.SetFloats("trianglePositionOffset", new float[] { cubeCornerOffset.x, cubeCornerOffset.y, cubeCornerOffset.z });
+        marchingCubesShader.SetInts("dotsPerAxis", dotsPerAxis.x, dotsPerAxis.y, dotsPerAxis.z );
+        marchingCubesShader.SetFloats("trianglePositionOffset", cubeCornerOffset.x, cubeCornerOffset.y, cubeCornerOffset.z);
 
-        marchingCubesShader.Dispatch(0, 1 + Mathf.CeilToInt(dotsPerAxis.x / 8), 1 + Mathf.CeilToInt(dotsPerAxis.y / 8), 1 + Mathf.CeilToInt(dotsPerAxis.z / 8));
+        marchingCubesShader.Dispatch(0, Mathf.CeilToInt(dotsPerAxis.x / 8), Mathf.CeilToInt(dotsPerAxis.y / 8), Mathf.CeilToInt(dotsPerAxis.z / 8));
 
         int triangleCount = GetAppendCount(triangleBuffer);
         triangleBuffer.GetData(surfaceTriangles);
@@ -119,8 +117,6 @@ public class NoisyDotsGenerator : MonoBehaviour {
                 triangles.Add(newVertexIndex);
                 uniqueVertexes.Add(surfaceTriangles[i].p2, newVertexIndex);
             }
-
-            
         }
 
         mesh.Clear();
