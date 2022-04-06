@@ -29,6 +29,15 @@ public class MeshGenerator {
         mesh = new Mesh();
         mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
         obj.GetComponent<MeshFilter>().mesh = mesh;
+
+        // Load the caustics-rendered material
+        List<Material> materialList = new List<Material>();
+        Material material = Resources.Load("Materials/Caustics", typeof(Material)) as Material;
+        if (material)
+            materialList.Add(material);
+        else
+            Debug.LogWarning("Material Resource Caustics could not be loaded.");
+        obj.GetComponent<MeshRenderer>().materials = materialList.ToArray();
     }
 
 
