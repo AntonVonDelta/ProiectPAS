@@ -51,8 +51,13 @@ public class ChunkGenerator : MonoBehaviour {
 
             if (!refresh && (tempChunkWorldPos - transform.position).magnitude <= loadingRadius * chunkSize) continue;
 
+            // Destroy all plants
+            foreach (GameObject plant in el.plants) Destroy(plant);
+
+            // Preserve chunk gameobject
             el.chunkObject.SetActive(false);
             cachedObjects.Push(el.chunkObject);
+
             loadedChunks.RemoveAt(i);
         }
         refresh = false;
@@ -96,10 +101,9 @@ public class ChunkGenerator : MonoBehaviour {
                 // Set collision mesh
                 chunkObj.GetComponent<MeshCollider>().sharedMesh = chunkObj.GetComponent<MeshFilter>().sharedMesh;
 
-                loadedChunks.Add(new Chunk { gridIndex = tempChunk, chunkObject = chunkObj });
-
                 // Generate plants on the newly loaded terrain
-                GeneratePlants(tempChunkWorldPos);
+                List<GameObject> generatedPlants = GeneratePlants(tempChunkWorldPos);
+                loadedChunks.Add(new Chunk { gridIndex = tempChunk, chunkObject = chunkObj, plants = generatedPlants });
             }
         }
 
@@ -114,7 +118,9 @@ public class ChunkGenerator : MonoBehaviour {
         }
     }
 
-    private void GeneratePlants(Vector3 gridPosition) {
+    private List<GameObject> GeneratePlants(Vector3 gridPosition) {
+        List<GameObject> result = new List<GameObject>();
+
         for (int i = 0; i < 1; i++) {
             Vector3 rayOrigin = gridPosition;
             RaycastHit hit;
@@ -122,9 +128,11 @@ public class ChunkGenerator : MonoBehaviour {
             rayOrigin.z += Random.value * chunkSize;
             rayOrigin.y = heightSize;
 
-            if(Physics.Raycast(rayOrigin,Vector3.down,out hit, heightSize)) {
-                Instantiate(plantPrefab, hit.point, Quaternion.identity);
+            if (Physics.Raycast(rayOrigin, Vector3.down, out hit, heightSize)) {
+                GameObject obj = Instantiate(plantPrefab, hit.point, Quaternion.identity);
+                result.Add(obj);
             }
         }
+        return result;
     }
 }
