@@ -36,6 +36,7 @@ public class VerletIntegration : MonoBehaviour {
     }
 
     public Material linesMaterial;
+    public Material sphereMaterial;
     public bool drawGizmo = true;
 
     private bool lastShowColliders = false;
@@ -304,6 +305,11 @@ public class VerletIntegration : MonoBehaviour {
     private GameObject CreateNewColliderSphereObject(Vector3 pos) {
         GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         obj.transform.position = pos;
+        obj.transform.localScale = Vector3.one * 0.2f;
+        obj.GetComponent<MeshRenderer>().material = sphereMaterial;
+        
+        Destroy(obj.GetComponent<SphereCollider>());
+
         return obj;
     }
 }

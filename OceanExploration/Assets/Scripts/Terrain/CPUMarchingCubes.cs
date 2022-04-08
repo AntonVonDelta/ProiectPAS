@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MarchingCubes {
+public class CPUMarchingCubes {
     public struct GRIDCELL {
         public Vector3[] cornerPositions;
         public float[] cornerValues;
