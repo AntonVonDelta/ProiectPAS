@@ -38,7 +38,11 @@ public class PlantGenerator {
         this.branchingProbability = branchingProbability;
     }
 
-    public void Generate() {
+    /// <summary>
+    /// Generate the plant around the origin but not exactly
+    /// </summary>
+    /// <param name="origin"></param>
+    public void Generate(Vector3 origin) {
         mainBranch = new Branch(null, uniqueIndex, mainBranchSize, intraBranchPointsDistance);
         Queue<Branch> pendingBranches = new Queue<Branch>();
         Queue<Branch> newBranches = new Queue<Branch>();
@@ -123,6 +127,13 @@ public class PlantGenerator {
 
     public List<BranchPointsInfo> GetBranchPointsIntervals() {
         return branchPointsInterval;
+    }
+
+    /// <summary>
+    /// Adds the number of points of the branch to the total list of points
+    /// </summary>
+    private void ConstructBranchChainOfPoints() {
+
     }
 
     /// <summary>
