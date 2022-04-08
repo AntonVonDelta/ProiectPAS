@@ -403,6 +403,10 @@ PrefabInstance:
       value: Plant
       objectReference: {fileID: 0}
     - target: {fileID: 4193468509239237831, guid: 80ffa03657e3e1049ad00c1523757ca7, type: 3}
+      propertyPath: showColliders
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4193468509239237831, guid: 80ffa03657e3e1049ad00c1523757ca7, type: 3}
       propertyPath: sphereMaterial
       value: 
       objectReference: {fileID: 2100000, guid: 47da76695da678b458f6e8f606f43c54, type: 2}

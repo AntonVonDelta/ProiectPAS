@@ -307,7 +307,8 @@ public class VerletIntegration : MonoBehaviour {
         obj.transform.position = pos;
         obj.transform.localScale = Vector3.one * 0.2f;
         obj.GetComponent<MeshRenderer>().material = sphereMaterial;
-        
+        obj.name = "SphereCollider";
+
         Destroy(obj.GetComponent<SphereCollider>());
 
         return obj;

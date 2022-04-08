@@ -57,11 +57,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eaec00d0707764a44b0ef73213e95880, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spherePrefab: {fileID: 1943070692951463592, guid: e3c8e19907936c348ba11c91d552cb1f, type: 3}
-  lineHolderPrefab: {fileID: 4643990815920974259, guid: a2022ad076bbf8f4991c2a0ac625d09d, type: 3}
   linesMaterial: {fileID: 2100000, guid: 3fbc99d875b15b74086c605c55e27fbd, type: 2}
+  sphereMaterial: {fileID: 0}
   drawGizmo: 0
-  showColliders: 1
+  showColliders: 0
   gravity: {x: 0, y: 0.001, z: 0}
   friction: 0.99
   constantJitter: 0.05
