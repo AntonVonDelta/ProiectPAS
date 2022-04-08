@@ -157,19 +157,20 @@ MonoBehaviour:
   lineHolderPrefab: {fileID: 4643990815920974259, guid: a2022ad076bbf8f4991c2a0ac625d09d, type: 3}
   linesMaterial: {fileID: 2100000, guid: 3fbc99d875b15b74086c605c55e27fbd, type: 2}
   drawGizmo: 0
-  showColliders: 0
+  showColliders: 1
   gravity: {x: 0, y: 0.001, z: 0}
   friction: 0.99
   constantJitter: 0.05
-  mainBranchPoints: 50
+  mainBranchPoints: 30
   maxBranchLevels: 3
   branchItemCountHalvingRatio: 2
-  linearDistancingFromParentFactor: 0.2
+  intraBranchPointsDistance: 0.5
+  interBranchLinearDistanceFactor: 0.2
   distanceAwayFromParentBranch: 0.2
   branchingProbability: 4
   maxRayDistance: 0.4
-  startingWidth: 1
-  endWidth: 0.6
+  startingWidth: 0.8
+  endWidth: 0.4
 --- !u!65 &255688539
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -191,7 +192,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 255688537}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.5771131, y: 14.177986, z: -3.354059}
+  m_LocalPosition: {x: 0, y: 10, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
