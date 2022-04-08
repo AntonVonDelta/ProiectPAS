@@ -64,7 +64,7 @@ MonoBehaviour:
   gravity: {x: 0, y: 0.001, z: 0}
   friction: 0.99
   constantJitter: 0.05
-  mainBranchPoints: 30
+  mainBranchPoints: 10
   maxBranchLevels: 3
   branchItemCountHalvingRatio: 2
   intraBranchPointsDistance: 0.5
