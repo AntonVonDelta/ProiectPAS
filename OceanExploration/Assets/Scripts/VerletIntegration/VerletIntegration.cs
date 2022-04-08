@@ -72,7 +72,8 @@ public class VerletIntegration : MonoBehaviour {
 
     void Start() {
         PlantGenerator plant = new PlantGenerator(mainBranchPoints, maxBranchLevels, branchItemCountHalvingRatio,
-            intraBranchPointsDistance, interBranchLinearDistanceFactor, distanceAwayFromParentBranch, branchingProbability);
+            intraBranchPointsDistance, interBranchLinearDistanceFactor, distanceAwayFromParentBranch, branchingProbability,
+            transform.position);
         plant.Generate();
         plant.LockPoint(0, transform.position);
 
