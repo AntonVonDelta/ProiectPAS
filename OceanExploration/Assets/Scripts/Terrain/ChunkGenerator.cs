@@ -154,6 +154,8 @@ public class ChunkGenerator : MonoBehaviour {
             rayOrigin.y = heightSize;
 
             if (Physics.Raycast(rayOrigin, Vector3.down + Random.insideUnitSphere.normalized / 2, out hit, heightSize)) {
+                if (hit.collider.gameObject.CompareTag("Player")) continue;
+
                 GameObject obj = Instantiate(plantPrefab, hit.point, Quaternion.identity);
                 result.Add(obj);
             }

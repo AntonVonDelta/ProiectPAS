@@ -364,7 +364,7 @@ GameObject:
   - component: {fileID: 2110026089}
   m_Layer: 0
   m_Name: PlayerVehicle
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -394,7 +394,7 @@ MonoBehaviour:
   perlinNoiseScale: 0.23
   plantPrefab: {fileID: 4193468509239237828, guid: 80ffa03657e3e1049ad00c1523757ca7, type: 3}
   plantsPerChunk: 2
-  plantsLoadingRadius: 1
+  plantsLoadingRadius: 3
 --- !u!136 &2110026085
 CapsuleCollider:
   m_ObjectHideFlags: 0
