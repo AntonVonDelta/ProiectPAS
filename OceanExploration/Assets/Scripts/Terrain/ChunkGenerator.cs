@@ -30,6 +30,7 @@ public class ChunkGenerator : MonoBehaviour {
     struct Chunk {
         public GameObject chunkObject;
         public Vector3Int gridIndex;
+        public List<GameObject> plants;
     };
     private Stack<GameObject> cachedObjects = new Stack<GameObject>();
     private List<Chunk> loadedChunks = new List<Chunk>();
