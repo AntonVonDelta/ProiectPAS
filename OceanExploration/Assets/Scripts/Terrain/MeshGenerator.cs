@@ -31,13 +31,12 @@ public class MeshGenerator {
         obj.GetComponent<MeshFilter>().mesh = mesh;
 
         // Load the caustics-rendered material
-        List<Material> materialList = new List<Material>();
         Material material = Resources.Load("Materials/Caustics", typeof(Material)) as Material;
-        if (material)
-            materialList.Add(material);
-        else
+        if (material) {
+            obj.GetComponent<MeshRenderer>().material = material;
+        } else {
             Debug.LogWarning("Material Resource Caustics could not be loaded.");
-        obj.GetComponent<MeshRenderer>().materials = materialList.ToArray();
+        }
     }
 
 
@@ -48,7 +47,7 @@ public class MeshGenerator {
         Vector3 cubeCornerOffset = -scale / 2;
 
         // perlin-scale independent offset aka applied before perlin scaling
-        Vector3 perlinPositionOffset = new Vector3(gridIndex.x*scale.x, gridIndex.y * scale.y, gridIndex.z * scale.z); 
+        Vector3 perlinPositionOffset = new Vector3(gridIndex.x * scale.x, gridIndex.y * scale.y, gridIndex.z * scale.z);
 
 
         // We create a compute buffer big enough to hold all possible triangles
