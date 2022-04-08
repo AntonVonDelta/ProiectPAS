@@ -14,13 +14,13 @@ public class ChunkGenerator : MonoBehaviour {
     public int heightSize = 30;
 
     [Tooltip("The radius around the player where chunks are loaded")]
-    public int loadingRadius = 2;
+    public int loadingRadius = 6;
     public bool refresh = false;
     public bool countTotalVertexes = false;
 
     [Header("Terrain generation params")]
     public ComputeShader marchingCubesShader;
-    public int dotsPerUnit = 1;
+    public int dotsPerUnit = 2;
     public bool doInterpolate = true;
     public bool squishTerrain = true;
     public float threshold = 0.5f;
@@ -29,6 +29,7 @@ public class ChunkGenerator : MonoBehaviour {
     [Header("Vegetation generation params")]
     public GameObject plantPrefab;
     public int plantsPerChunk = 2;
+    public int plantsLoadingRadius = 1;
 
     struct Chunk {
         public GameObject chunkObject;
@@ -55,8 +56,9 @@ public class ChunkGenerator : MonoBehaviour {
             if (!refresh && (tempChunkWorldPos - transform.position).magnitude <= loadingRadius * chunkSize) continue;
 
             // Destroy all plants
-            foreach (GameObject plant in el.plants) Destroy(plant);
-
+            if (el.plants != null) {
+                foreach (GameObject plant in el.plants) Destroy(plant);
+            }
             // Preserve chunk gameobject
             el.chunkObject.SetActive(false);
             cachedObjects.Push(el.chunkObject);
@@ -74,8 +76,21 @@ public class ChunkGenerator : MonoBehaviour {
                 // Load only in a circle around player
                 if ((tempChunkWorldPos - transform.position).magnitude > loadingRadius * chunkSize) continue;
 
+
                 // Skip already loaded chunks
-                if (loadedChunks.Any(el => el.gridIndex == tempChunk)) continue;
+                int loadedChunkIndex = loadedChunks.FindIndex(el => el.gridIndex == tempChunk);
+                if (loadedChunkIndex != -1) {
+                    // Load plants if near 'em
+                    if ((tempChunkWorldPos - transform.position).magnitude <= plantsLoadingRadius * chunkSize) {
+                        Chunk loadedChunk = loadedChunks[loadedChunkIndex];
+                        if (loadedChunk.plants == null) {
+                            loadedChunk.plants = GeneratePlants(tempChunkWorldPos);
+                            loadedChunks[loadedChunkIndex] = loadedChunk;
+                        }
+                    }
+
+                    continue;
+                }
 
                 GameObject chunkObj = null;
                 if (cachedObjects.Count() != 0) {
@@ -105,9 +120,8 @@ public class ChunkGenerator : MonoBehaviour {
                 // Set collision mesh
                 chunkObj.GetComponent<MeshCollider>().sharedMesh = chunkObj.GetComponent<MeshFilter>().sharedMesh;
 
-                // Generate plants on the newly loaded terrain
-                List<GameObject> generatedPlants = GeneratePlants(tempChunkWorldPos);
-                loadedChunks.Add(new Chunk { gridIndex = tempChunk, chunkObject = chunkObj, plants = generatedPlants });
+                // Register newly created chunk
+                loadedChunks.Add(new Chunk { gridIndex = tempChunk, chunkObject = chunkObj, plants = null });
             }
         }
 

@@ -60,14 +60,13 @@ MonoBehaviour:
   linesMaterial: {fileID: 2100000, guid: 3fbc99d875b15b74086c605c55e27fbd, type: 2}
   sphereMaterial: {fileID: 0}
   drawGizmo: 0
-  showColliders: 0
   gravity: {x: 0, y: 0.001, z: 0}
   friction: 0.99
   constantJitter: 0.05
-  mainBranchPoints: 10
+  mainBranchPoints: 20
   maxBranchLevels: 3
   branchItemCountHalvingRatio: 2
-  intraBranchPointsDistance: 0.5
+  intraBranchPointsDistance: 0.9
   interBranchLinearDistanceFactor: 0.2
   distanceAwayFromParentBranch: 0.2
   branchingProbability: 4

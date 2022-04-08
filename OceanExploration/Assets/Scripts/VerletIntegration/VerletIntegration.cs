@@ -35,7 +35,6 @@ public class VerletIntegration : MonoBehaviour {
     }
 
     public Material linesMaterial;
-    public Material sphereMaterial;
     public bool drawGizmo = true;
 
     [Header("Physics settings")]
