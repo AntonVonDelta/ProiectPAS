@@ -24,6 +24,9 @@ public class ChunkGenerator : MonoBehaviour {
     public float threshold = 0.5f;
     public float perlinNoiseScale = 0.26f;
 
+    [Header("Vegetation generation params")]
+    public GameObject plantPrefab;
+
     struct Chunk {
         public GameObject chunkObject;
         public Vector3Int gridIndex;
@@ -93,6 +96,9 @@ public class ChunkGenerator : MonoBehaviour {
                 chunkObj.GetComponent<MeshCollider>().sharedMesh = chunkObj.GetComponent<MeshFilter>().sharedMesh;
 
                 loadedChunks.Add(new Chunk { gridIndex = tempChunk, chunkObject = chunkObj });
+
+                // Generate plants on the newly loaded terrain
+                GeneratePlants(tempChunkWorldPos);
             }
         }
 
@@ -104,6 +110,20 @@ public class ChunkGenerator : MonoBehaviour {
                 vertexes += (ulong)loadedChunks[i].chunkObject.GetComponent<MeshFilter>().mesh.vertices.Length;
             }
             Debug.Log($"Counted vertexes:  {vertexes}");
+        }
+    }
+
+    private void GeneratePlants(Vector3 gridPosition) {
+        for (int i = 0; i < 1; i++) {
+            Vector3 rayOrigin = gridPosition;
+            RaycastHit hit;
+            rayOrigin.x = Random.value * chunkSize;
+            rayOrigin.z = Random.value * chunkSize;
+            rayOrigin.y = heightSize;
+
+            if(Physics.Raycast(rayOrigin,Vector3.down,out hit, heightSize)) {
+                Instantiate(plantPrefab, hit.point, Quaternion.identity);
+            }
         }
     }
 }
