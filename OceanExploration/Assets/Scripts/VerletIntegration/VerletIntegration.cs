@@ -35,10 +35,8 @@ public class VerletIntegration : MonoBehaviour {
         public GameObject holderObj;
     }
 
-
-    public GameObject spherePrefab;
-    public GameObject lineHolderPrefab;
     public Material linesMaterial;
+    public Material sphereMaterial;
     public bool drawGizmo = true;
 
     private bool lastShowColliders = false;
@@ -90,7 +88,7 @@ public class VerletIntegration : MonoBehaviour {
         // Create line renderes for each branch
         float widthChangingRatio = endWidth / startingWidth;
         for (int i = 0; i < branchPointsInterval.Count; i++) {
-            GameObject newRenderObject = Instantiate(lineHolderPrefab);
+            GameObject newRenderObject = CreateNewLineRendererObject();
             LineRenderer renderer = newRenderObject.GetComponent<LineRenderer>();
             renderer.positionCount = branchPointsInterval[i].pointsIndexes.Length;
             renderer.material = linesMaterial;
@@ -250,7 +248,7 @@ public class VerletIntegration : MonoBehaviour {
             // Do not create collider "instances" for locked points because they cannot be moved
             if (simulationPoints[i].locked) continue;
 
-            GameObject newReferenceObject = Instantiate(spherePrefab, simulationPoints[i].pos, Quaternion.identity);
+            GameObject newReferenceObject = CreateNewColliderSphereObject(simulationPoints[i].pos);
             MeshRenderer renderer = newReferenceObject.GetComponent<MeshRenderer>();
 
             // Initial values
@@ -285,7 +283,7 @@ public class VerletIntegration : MonoBehaviour {
 
     private void UpdateColliderInstances() {
         for (int i = 0; i < colliderInstances.Count; i++) {
-            colliderInstances[i].holderObj.transform.position = simulationPoints[i].pos;
+            colliderInstances[i].holderObj.transform.position = simulationPoints[colliderInstances[i].pointIndex].pos;
         }
     }
 
@@ -297,5 +295,22 @@ public class VerletIntegration : MonoBehaviour {
                 renderer.SetPosition(j, simulationPoints[branchPointsInterval[i].pointsIndexes[j]].pos);
             }
         }
+    }
+
+    private GameObject CreateNewLineRendererObject() {
+        GameObject obj = new GameObject();
+        obj.AddComponent<LineRenderer>();
+        return obj;
+    }
+    private GameObject CreateNewColliderSphereObject(Vector3 pos) {
+        GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        obj.transform.position = pos;
+        obj.transform.localScale = Vector3.one * 0.2f;
+        obj.GetComponent<MeshRenderer>().material = sphereMaterial;
+        obj.name = "SphereCollider";
+
+        Destroy(obj.GetComponent<SphereCollider>());
+
+        return obj;
     }
 }
