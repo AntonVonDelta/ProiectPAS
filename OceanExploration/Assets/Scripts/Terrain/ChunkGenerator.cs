@@ -153,7 +153,8 @@ public class ChunkGenerator : MonoBehaviour {
             rayOrigin.z += Random.value * chunkSize;
             rayOrigin.y = heightSize;
 
-            if (Physics.Raycast(rayOrigin, Vector3.down + Random.insideUnitSphere.normalized / 2, out hit, heightSize)) {
+            // Ignore isTrigger collider because all the plants got one around them
+            if (Physics.Raycast(rayOrigin, Vector3.down + Random.insideUnitSphere.normalized / 2, out hit, heightSize, 255, QueryTriggerInteraction.Ignore)) {
                 if (hit.collider.gameObject.CompareTag("Player")) continue;
 
                 GameObject obj = Instantiate(plantPrefab, hit.point, Quaternion.identity);

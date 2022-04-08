@@ -65,8 +65,8 @@ MonoBehaviour:
   mainBranchPoints: 10
   maxBranchLevels: 3
   branchItemCountHalvingRatio: 2
-  intraBranchPointsDistance: 0.9
-  interBranchLinearDistanceFactor: 0.2
+  intraBranchPointsDistance: 1.2
+  interBranchLinearDistanceFactor: 0.4
   distanceAwayFromParentBranch: 0.2
   branchingProbability: 4
   maxRayDistance: 0.4
