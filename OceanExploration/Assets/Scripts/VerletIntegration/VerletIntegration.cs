@@ -64,7 +64,6 @@ public class VerletIntegration : MonoBehaviour {
     public float startingWidth = 1;
     public float endWidth = 0.6f;
 
-    private Vector3 gizmoPos = Vector3.zero;
     private List<ColliderPoint> colliderInstances = new List<ColliderPoint>();
     private List<GameObject> lineRenderersParents = new List<GameObject>();
     private List<VerletPoint> simulationPoints = new List<VerletPoint>();
@@ -118,7 +117,6 @@ public class VerletIntegration : MonoBehaviour {
 
     private void OnDrawGizmos() {
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(gizmoPos, 0.2f);
 
         if (!drawGizmo) return;
 
@@ -147,8 +145,6 @@ public class VerletIntegration : MonoBehaviour {
                 Ray ray = new Ray(samplingPoint, closestPoint - samplingPoint);
                 RaycastHit hit;
                 if (Physics.Raycast(ray, out hit, maxRayDistance)) {
-                    gizmoPos = hit.point;
-
                     // Use this information to push points back
                     VerletPoint point = simulationPoints[colliderInstances[i].pointIndex];
                     point.pos += hit.normal * maxRayDistance;

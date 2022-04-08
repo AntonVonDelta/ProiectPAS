@@ -117,8 +117,8 @@ public class ChunkGenerator : MonoBehaviour {
         for (int i = 0; i < 1; i++) {
             Vector3 rayOrigin = gridPosition;
             RaycastHit hit;
-            rayOrigin.x = Random.value * chunkSize;
-            rayOrigin.z = Random.value * chunkSize;
+            rayOrigin.x += Random.value * chunkSize;
+            rayOrigin.z += Random.value * chunkSize;
             rayOrigin.y = heightSize;
 
             if(Physics.Raycast(rayOrigin,Vector3.down,out hit, heightSize)) {
