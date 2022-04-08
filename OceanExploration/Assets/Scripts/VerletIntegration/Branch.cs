@@ -9,21 +9,21 @@ public class Branch {
         public Branch childBranch;
     }
 
-    private List<VerletPoint> simulationPoints = new List<VerletPoint>();
     private List<Attachment> childBranches = new List<Attachment>();
     private List<RigidLine> rigidLines = new List<RigidLine>();
     private int order = 0;
     private Branch parent;
     private int startingNodeIndex = -1;
+    private int nodeCount;
     private float distance;
 
-    public Branch(Branch parent,int startingNodeIndex, int nodes, float distance = 1f) {
+    public Branch(Branch parent,int startingNodeIndex, int nodeCount, float distance = 1f) {
         this.parent = parent;
         this.startingNodeIndex = startingNodeIndex;
+        this.nodeCount = nodeCount;
         this.distance = distance;
 
-        CreateVerletPoints(nodes);
-        ConnectPointsByLines(nodes, distance);
+        ConnectPointsByLines(nodeCount, distance);
 
         if (parent != null) {
             order = parent.GetOrder() + 1;
@@ -48,7 +48,7 @@ public class Branch {
     }
 
     public int GetNodeCount() {
-        return simulationPoints.Count;
+        return nodeCount;
     }
     public float GetDistance() {
         return distance;
@@ -58,9 +58,7 @@ public class Branch {
         return childBranches;
     }
 
-    public List<VerletPoint> GetVerletPoints() {
-        return simulationPoints;
-    }
+
     public List<RigidLine> GetRigidLines() {
         return rigidLines;
     }
@@ -70,11 +68,6 @@ public class Branch {
     private void ConnectPointsByLines(int count, float distance) {
         for (int i = 0; i < count - 1; i++) {
             rigidLines.Add(new RigidLine(startingNodeIndex + i, startingNodeIndex + i + 1, distance));
-        }
-    }
-    private void CreateVerletPoints(int count) {
-        for (int i = 0; i < count; i++) {
-            simulationPoints.Add(new VerletPoint(Random.insideUnitSphere));
         }
     }
 }

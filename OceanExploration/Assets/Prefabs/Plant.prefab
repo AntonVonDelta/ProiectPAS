@@ -58,17 +58,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   linesMaterial: {fileID: 2100000, guid: 3fbc99d875b15b74086c605c55e27fbd, type: 2}
-  sphereMaterial: {fileID: 0}
   drawGizmo: 0
-  showColliders: 0
   gravity: {x: 0, y: 0.001, z: 0}
   friction: 0.99
   constantJitter: 0.05
-  mainBranchPoints: 30
+  mainBranchPoints: 10
   maxBranchLevels: 3
   branchItemCountHalvingRatio: 2
-  intraBranchPointsDistance: 0.5
-  interBranchLinearDistanceFactor: 0.2
+  intraBranchPointsDistance: 1.2
+  interBranchLinearDistanceFactor: 0.4
   distanceAwayFromParentBranch: 0.2
   branchingProbability: 4
   maxRayDistance: 0.4

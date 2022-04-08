@@ -32,15 +32,10 @@ public class VerletIntegration : MonoBehaviour {
     }
     struct ColliderPoint {
         public int pointIndex;
-        public GameObject holderObj;
     }
 
     public Material linesMaterial;
-    public Material sphereMaterial;
     public bool drawGizmo = true;
-
-    private bool lastShowColliders = false;
-    public bool showColliders = false;
 
     [Header("Physics settings")]
     public Vector3 gravity = Vector3.up * 0.001f;
@@ -68,7 +63,6 @@ public class VerletIntegration : MonoBehaviour {
     public float startingWidth = 1;
     public float endWidth = 0.6f;
 
-    private Vector3 gizmoPos = Vector3.zero;
     private List<ColliderPoint> colliderInstances = new List<ColliderPoint>();
     private List<GameObject> lineRenderersParents = new List<GameObject>();
     private List<VerletPoint> simulationPoints = new List<VerletPoint>();
@@ -77,7 +71,8 @@ public class VerletIntegration : MonoBehaviour {
 
     void Start() {
         PlantGenerator plant = new PlantGenerator(mainBranchPoints, maxBranchLevels, branchItemCountHalvingRatio,
-            intraBranchPointsDistance, interBranchLinearDistanceFactor, distanceAwayFromParentBranch, branchingProbability);
+            intraBranchPointsDistance, interBranchLinearDistanceFactor, distanceAwayFromParentBranch, branchingProbability,
+            transform.position);
         plant.Generate();
         plant.LockPoint(0, transform.position);
 
@@ -114,26 +109,14 @@ public class VerletIntegration : MonoBehaviour {
             ApplyConstraints();
         }
 
-        UpdateColliderInstances();
         UpdateLineRenderers();
         RecalculateBounds();
-
-        // Handle UI option
-        if (lastShowColliders != showColliders) {
-            lastShowColliders = showColliders;
-
-            for (int i = 0; i < colliderInstances.Count; i++) {
-                MeshRenderer renderer = colliderInstances[i].holderObj.GetComponent<MeshRenderer>();
-                renderer.enabled = showColliders;
-            }
-        }
     }
 
 
 
     private void OnDrawGizmos() {
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(gizmoPos, 0.2f);
 
         if (!drawGizmo) return;
 
@@ -146,22 +129,25 @@ public class VerletIntegration : MonoBehaviour {
     }
 
     private void OnTriggerStay(Collider other) {
+        // Doesn't seem to increase fps
+        //if (other.gameObject.CompareTag(ChunkGenerator.ChunkTag)) return;
+
         for (int i = 0; i < colliderInstances.Count; i++) {
             // ClosestPoint works only with convex colliders - as noted on https://docs.unity3d.com/ScriptReference/Physics.ClosestPoint.html
             // ComputePenetration only works with convex colliders
 
-            // Get closest point on the aproaching surface
-            Vector3 closestPoint = other.ClosestPoint(colliderInstances[i].holderObj.transform.position);
+            Vector3 samplingPoint = simulationPoints[colliderInstances[i].pointIndex].pos;
 
-            if ((closestPoint - colliderInstances[i].holderObj.transform.position).sqrMagnitude < Mathf.Epsilon) {
+            // Get closest point on the aproaching surface
+            Vector3 closestPoint = other.ClosestPoint(samplingPoint);
+
+            if ((closestPoint - samplingPoint).sqrMagnitude < Mathf.Epsilon) {
                 // The trigger point is inside the collider
             } else {
                 // Cast an ray in order to get normal and other information
-                Ray ray = new Ray(colliderInstances[i].holderObj.transform.position, closestPoint - colliderInstances[i].holderObj.transform.position);
+                Ray ray = new Ray(samplingPoint, closestPoint - samplingPoint);
                 RaycastHit hit;
                 if (Physics.Raycast(ray, out hit, maxRayDistance)) {
-                    gizmoPos = hit.point;
-
                     // Use this information to push points back
                     VerletPoint point = simulationPoints[colliderInstances[i].pointIndex];
                     point.pos += hit.normal * maxRayDistance;
@@ -248,14 +234,7 @@ public class VerletIntegration : MonoBehaviour {
             // Do not create collider "instances" for locked points because they cannot be moved
             if (simulationPoints[i].locked) continue;
 
-            GameObject newReferenceObject = CreateNewColliderSphereObject(simulationPoints[i].pos);
-            MeshRenderer renderer = newReferenceObject.GetComponent<MeshRenderer>();
-
-            // Initial values
-            renderer.enabled = showColliders;
-            newReferenceObject.name = $"Sphere {i}";
-
-            colliderInstances.Add(new ColliderPoint { pointIndex = i, holderObj = newReferenceObject });
+            colliderInstances.Add(new ColliderPoint { pointIndex = i });
         }
     }
 
@@ -281,11 +260,6 @@ public class VerletIntegration : MonoBehaviour {
         collider.size = dimensionsMax - dimensionsMin;
     }
 
-    private void UpdateColliderInstances() {
-        for (int i = 0; i < colliderInstances.Count; i++) {
-            colliderInstances[i].holderObj.transform.position = simulationPoints[colliderInstances[i].pointIndex].pos;
-        }
-    }
 
     private void UpdateLineRenderers() {
         for (int i = 0; i < lineRenderersParents.Count; i++) {
@@ -300,17 +274,8 @@ public class VerletIntegration : MonoBehaviour {
     private GameObject CreateNewLineRendererObject() {
         GameObject obj = new GameObject();
         obj.AddComponent<LineRenderer>();
-        return obj;
-    }
-    private GameObject CreateNewColliderSphereObject(Vector3 pos) {
-        GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        obj.transform.position = pos;
-        obj.transform.localScale = Vector3.one * 0.2f;
-        obj.GetComponent<MeshRenderer>().material = sphereMaterial;
-        obj.name = "SphereCollider";
-
-        Destroy(obj.GetComponent<SphereCollider>());
-
+        obj.transform.SetParent(transform);
+        obj.name = "LineBoard";
         return obj;
     }
 }
