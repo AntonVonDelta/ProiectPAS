@@ -24,11 +24,14 @@ public class PlantGenerator {
     private float interBranchLinearDistanceFactor;
     private float distanceAwayFromParentBranch;
     private float branchingProbability;
+    private Vector3 origin;
 
     private Branch mainBranch;
     private int uniqueIndex = 0;
 
-    public PlantGenerator(int mainBranchSize, int maxBranching, float halvingRatio,float intraBranchPointsDistance, float interBranchLinearDistanceFactor, float distanceAwayFromParentBranch,float branchingProbability) {
+    public PlantGenerator(int mainBranchSize, int maxBranching, float halvingRatio,
+        float intraBranchPointsDistance, float interBranchLinearDistanceFactor, float distanceAwayFromParentBranch, float branchingProbability,
+        Vector3 origin) {
         this.mainBranchSize = mainBranchSize;
         this.maxBranching = maxBranching;
         this.halvingRatio = halvingRatio;
@@ -36,13 +39,14 @@ public class PlantGenerator {
         this.interBranchLinearDistanceFactor = interBranchLinearDistanceFactor;
         this.distanceAwayFromParentBranch = distanceAwayFromParentBranch;
         this.branchingProbability = branchingProbability;
+        this.origin = origin;
     }
 
     /// <summary>
     /// Generate the plant around the origin but not exactly
     /// </summary>
     /// <param name="origin"></param>
-    public void Generate(Vector3 origin) {
+    public void Generate() {
         mainBranch = new Branch(null, uniqueIndex, mainBranchSize, intraBranchPointsDistance);
         Queue<Branch> pendingBranches = new Queue<Branch>();
         Queue<Branch> newBranches = new Queue<Branch>();
@@ -51,7 +55,7 @@ public class PlantGenerator {
         uniqueIndex += mainBranch.GetNodeCount();
 
         // Add points and constraint lines
-        simulationPoints.AddRange(mainBranch.GetVerletPoints());
+        ConstructBranchChainOfPoints(mainBranch);
         rigidLines.AddRange(mainBranch.GetRigidLines());
 
         for (int i = 0; i < maxBranching; i++) {
@@ -59,7 +63,7 @@ public class PlantGenerator {
                 Branch currentBranch = pendingBranches.Dequeue();
 
                 for (int j = 0; j < currentBranch.GetNodeCount(); j++) {
-                    int rand = Random.Range(0, 99)/11;  // Use this formula to get more random resolution
+                    int rand = Random.Range(0, 99) / 11;  // Use this formula to get more random resolution
                     if (rand <= branchingProbability) {
                         int newBranchNodeCount = Mathf.Min(currentBranch.GetNodeCount() - j - 1, (int)(currentBranch.GetNodeCount() / halvingRatio));
                         float branchPointsDistance = Mathf.Sqrt(Mathf.Pow(currentBranch.GetDistance(), 2) + Mathf.Pow(interBranchLinearDistanceFactor, 2));
@@ -73,7 +77,7 @@ public class PlantGenerator {
                         newBranches.Enqueue(newBranch);
 
                         // Add points and constraint lines
-                        simulationPoints.AddRange(newBranch.GetVerletPoints());
+                        ConstructBranchChainOfPoints(newBranch);
                         rigidLines.AddRange(newBranch.GetRigidLines());
                         CrossConnectTwoChains(currentBranch, j, newBranch, distanceAwayFromParentBranch, interBranchLinearDistanceFactor);
 
@@ -85,7 +89,7 @@ public class PlantGenerator {
                         newBranches.Enqueue(newBranch2);
 
                         // Add points and constraint lines
-                        simulationPoints.AddRange(newBranch2.GetVerletPoints());
+                        ConstructBranchChainOfPoints(newBranch2);
                         rigidLines.AddRange(newBranch2.GetRigidLines());
                         CrossConnectTwoChains(currentBranch, j, newBranch2, distanceAwayFromParentBranch, interBranchLinearDistanceFactor);
 
@@ -132,8 +136,10 @@ public class PlantGenerator {
     /// <summary>
     /// Adds the number of points of the branch to the total list of points
     /// </summary>
-    private void ConstructBranchChainOfPoints() {
-
+    private void ConstructBranchChainOfPoints(Branch branch) {
+        for (int i = 0; i < branch.GetNodeCount(); i++) {
+            simulationPoints.Add(new VerletPoint(origin + Random.insideUnitSphere));
+        }
     }
 
     /// <summary>
