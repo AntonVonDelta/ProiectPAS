@@ -47,13 +47,14 @@ public class ChunkGenerator : MonoBehaviour {
     // Update is called once per frame
     void Update() {
         Vector3Int currentChunkGrid = new Vector3Int((int)transform.position.x / chunkSize, 0, (int)transform.position.z / chunkSize);
+        Vector3 transformWithoutYAxis = new Vector3(transform.position.x, 0, transform.position.z);
 
         // Remove far chunks
         for (int i = loadedChunks.Count - 1; i >= 0; i--) {
             var el = loadedChunks[i];
             Vector3 tempChunkWorldPos = el.gridIndex * chunkSize;
 
-            if (!refresh && (tempChunkWorldPos - transform.position).magnitude <= loadingRadius * chunkSize) continue;
+            if (!refresh && (tempChunkWorldPos - transformWithoutYAxis).magnitude <= loadingRadius * chunkSize) continue;
 
             // Destroy all plants
             if (el.plants != null) {
@@ -74,18 +75,24 @@ public class ChunkGenerator : MonoBehaviour {
                 Vector3 tempChunkWorldPos = tempChunk * chunkSize;
 
                 // Load only in a circle around player
-                if ((tempChunkWorldPos - transform.position).magnitude > loadingRadius * chunkSize) continue;
+                if ((tempChunkWorldPos - transformWithoutYAxis).magnitude > loadingRadius * chunkSize) continue;
 
 
                 // Skip already loaded chunks
-                int loadedChunkIndex = loadedChunks.FindIndex(el => el.gridIndex == tempChunk);
-                if (loadedChunkIndex != -1) {
+                int searchedChunkIndex = loadedChunks.FindIndex(el => el.gridIndex == tempChunk);
+                if (searchedChunkIndex != -1) {
                     // Load plants if near 'em
-                    if ((tempChunkWorldPos - transform.position).magnitude <= plantsLoadingRadius * chunkSize) {
-                        Chunk loadedChunk = loadedChunks[loadedChunkIndex];
-                        if (loadedChunk.plants == null) {
-                            loadedChunk.plants = GeneratePlants(tempChunkWorldPos);
-                            loadedChunks[loadedChunkIndex] = loadedChunk;
+                    Chunk searchedChunk = loadedChunks[searchedChunkIndex];
+                    if ((tempChunkWorldPos - transformWithoutYAxis).magnitude <= plantsLoadingRadius * chunkSize) {
+                        if (searchedChunk.plants == null) {
+                            searchedChunk.plants = GeneratePlants(tempChunkWorldPos);
+                            loadedChunks[searchedChunkIndex] = searchedChunk;
+                        }
+                    } else {
+                        // Destroy all plants
+                        if (searchedChunk.plants != null) {
+                            foreach (GameObject plant in searchedChunk.plants) Destroy(plant);
+                            searchedChunk.plants = null;
                         }
                     }
 
