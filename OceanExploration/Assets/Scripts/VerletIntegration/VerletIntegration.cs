@@ -130,6 +130,9 @@ public class VerletIntegration : MonoBehaviour {
     }
 
     private void OnTriggerStay(Collider other) {
+        // Doesn't seem to increase fps
+        //if (other.gameObject.CompareTag(ChunkGenerator.ChunkTag)) return;
+
         for (int i = 0; i < colliderInstances.Count; i++) {
             // ClosestPoint works only with convex colliders - as noted on https://docs.unity3d.com/ScriptReference/Physics.ClosestPoint.html
             // ComputePenetration only works with convex colliders

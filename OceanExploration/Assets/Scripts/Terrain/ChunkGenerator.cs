@@ -4,6 +4,8 @@ using System.Linq;
 using UnityEngine;
 
 public class ChunkGenerator : MonoBehaviour {
+    public static string ChunkTag = "ChunkTag";
+
     [Header("Chunk parameters")]
     [Tooltip("The size of the base")]
     public int chunkSize = 10;
@@ -26,6 +28,7 @@ public class ChunkGenerator : MonoBehaviour {
 
     [Header("Vegetation generation params")]
     public GameObject plantPrefab;
+    public int plantsPerChunk = 2;
 
     struct Chunk {
         public GameObject chunkObject;
@@ -82,6 +85,7 @@ public class ChunkGenerator : MonoBehaviour {
                     chunkObj = new GameObject($"MeshFab_{loadedChunks.Count}", typeof(MeshFilter));
                     chunkObj.AddComponent<MeshRenderer>().material = new Material(Shader.Find("Diffuse"));
                     chunkObj.AddComponent<MeshCollider>();
+                    chunkObj.tag = ChunkTag;
                 }
                 chunkObj.transform.position = tempChunkWorldPos + new Vector3(0, heightSize / 2, 0);
 
@@ -121,14 +125,14 @@ public class ChunkGenerator : MonoBehaviour {
     private List<GameObject> GeneratePlants(Vector3 gridPosition) {
         List<GameObject> result = new List<GameObject>();
 
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < plantsPerChunk; i++) {
             Vector3 rayOrigin = gridPosition;
             RaycastHit hit;
             rayOrigin.x += Random.value * chunkSize;
             rayOrigin.z += Random.value * chunkSize;
             rayOrigin.y = heightSize;
 
-            if (Physics.Raycast(rayOrigin, Vector3.down, out hit, heightSize)) {
+            if (Physics.Raycast(rayOrigin, Vector3.down + Random.insideUnitSphere.normalized / 2, out hit, heightSize)) {
                 GameObject obj = Instantiate(plantPrefab, hit.point, Quaternion.identity);
                 result.Add(obj);
             }
