@@ -68,6 +68,7 @@ public class ChunkGenerator : MonoBehaviour {
         }
         refresh = false;
 
+        // Load new chunks within view distance
         for (int i = -loadingRadius; i < loadingRadius + 1; i++) {
             for (int j = -loadingRadius; j < loadingRadius + 1; j++) {
                 Vector3Int relativeGridIndexes = new Vector3Int(i, 0, j);
@@ -77,25 +78,8 @@ public class ChunkGenerator : MonoBehaviour {
                 // Load only in a circle around player
                 if ((tempChunkWorldPos - transformWithoutYAxis).magnitude > loadingRadius * chunkSize) continue;
 
-
                 // Skip already loaded chunks
-                int searchedChunkIndex = loadedChunks.FindIndex(el => el.gridIndex == tempChunk);
-                if (searchedChunkIndex != -1) {
-                    // Load plants if near 'em
-                    Chunk searchedChunk = loadedChunks[searchedChunkIndex];
-                    if ((tempChunkWorldPos - transformWithoutYAxis).magnitude <= plantsLoadingRadius * chunkSize) {
-                        if (searchedChunk.plants == null) {
-                            searchedChunk.plants = GeneratePlants(tempChunkWorldPos);
-                            loadedChunks[searchedChunkIndex] = searchedChunk;
-                        }
-                    } else {
-                        // Destroy all plants
-                        if (searchedChunk.plants != null) {
-                            foreach (GameObject plant in searchedChunk.plants) Destroy(plant);
-                            searchedChunk.plants = null;
-                        }
-                    }
-
+                if (loadedChunks.Any(el => el.gridIndex == tempChunk)) {
                     continue;
                 }
 
@@ -132,6 +116,34 @@ public class ChunkGenerator : MonoBehaviour {
             }
         }
 
+        // Loads or destroy plants
+        for (int i = -loadingRadius; i < loadingRadius + 1; i++) {
+            for (int j = -loadingRadius; j < loadingRadius + 1; j++) {
+                Vector3Int relativeGridIndexes = new Vector3Int(i, 0, j);
+                Vector3Int tempChunk = currentChunkGrid + relativeGridIndexes;
+                Vector3 tempChunkWorldPos = tempChunk * chunkSize;
+
+                int searchedChunkIndex = loadedChunks.FindIndex(el => el.gridIndex == tempChunk);
+                if (searchedChunkIndex != -1) {
+                    // Load plants if near 'em
+                    Chunk searchedChunk = loadedChunks[searchedChunkIndex];
+                    if ((tempChunkWorldPos - transformWithoutYAxis).magnitude <= plantsLoadingRadius * chunkSize) {
+                        if (searchedChunk.plants == null) {
+                            searchedChunk.plants = GeneratePlants(tempChunkWorldPos);
+                            loadedChunks[searchedChunkIndex] = searchedChunk;
+                        }
+                    } else {
+                        // Destroy all plants
+                        if (searchedChunk.plants != null) {
+                            foreach (GameObject plant in searchedChunk.plants) Destroy(plant);
+                            searchedChunk.plants = null;
+                        }
+                    }
+                }
+            }
+        }
+
+
         if (countTotalVertexes) {
             countTotalVertexes = false;
 
@@ -145,7 +157,6 @@ public class ChunkGenerator : MonoBehaviour {
 
     private List<GameObject> GeneratePlants(Vector3 gridPosition) {
         List<GameObject> result = new List<GameObject>();
-
         for (int i = 0; i < plantsPerChunk; i++) {
             Vector3 rayOrigin = gridPosition;
             RaycastHit hit;
@@ -154,7 +165,7 @@ public class ChunkGenerator : MonoBehaviour {
             rayOrigin.y = heightSize;
 
             // Ignore isTrigger collider because all the plants got one around them
-            if (Physics.Raycast(rayOrigin, Vector3.down + Random.insideUnitSphere.normalized / 2, out hit, heightSize, 255, QueryTriggerInteraction.Ignore)) {
+            if (Physics.Raycast(rayOrigin, Vector3.down + Random.insideUnitSphere.normalized / 2, out hit, heightSize, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)) {
                 if (hit.collider.gameObject.CompareTag("Player")) continue;
 
                 GameObject obj = Instantiate(plantPrefab, hit.point, Quaternion.identity);

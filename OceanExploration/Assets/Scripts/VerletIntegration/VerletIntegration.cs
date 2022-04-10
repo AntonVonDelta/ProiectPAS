@@ -147,7 +147,7 @@ public class VerletIntegration : MonoBehaviour {
                 // Cast an ray in order to get normal and other information
                 Ray ray = new Ray(samplingPoint, closestPoint - samplingPoint);
                 RaycastHit hit;
-                if (Physics.Raycast(ray, out hit, maxRayDistance)) {
+                if (Physics.Raycast(ray, out hit, maxRayDistance, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)) {
                     // Use this information to push points back
                     VerletPoint point = simulationPoints[colliderInstances[i].pointIndex];
                     point.pos += hit.normal * maxRayDistance;
