@@ -79,7 +79,8 @@ public class ChunkGenerator : MonoBehaviour {
                 if ((tempChunkWorldPos - transformWithoutYAxis).magnitude > loadingRadius * chunkSize) continue;
 
                 // Skip already loaded chunks
-                if (loadedChunks.Any(el => el.gridIndex == tempChunk)) {
+                // FindIndex() is faster than Any()
+                if (loadedChunks.FindIndex(el => el.gridIndex == tempChunk)!=-1) {
                     continue;
                 }
 
