@@ -251,9 +251,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a521338861d891344bd77547c30c481b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  chunkSize: 10
-  heightSize: 30
-  loadingRadius: 6
+  chunkSize: 30
+  heightSize: 25
+  loadingRadius: 4
   refresh: 0
   countTotalVertexes: 0
   marchingCubesShader: {fileID: 7200000, guid: 1723cc3632efc1346a230e6d471483c0, type: 3}

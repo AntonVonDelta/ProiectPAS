@@ -1,8 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Collections;
 using UnityEngine;
 
-public class MeshGenerator {
+public class MeshGenerator: IDisposable {
     struct GPUTriangle {
         public Vector3 p1;
         public Vector3 p2;
@@ -22,6 +24,7 @@ public class MeshGenerator {
 
     Mesh mesh;
     Vector3Int gridIndex;
+    ComputeBuffer bufferFacetsTable;
 
     public MeshGenerator(GameObject obj, Vector3Int gridIndex) {
         this.gridIndex = gridIndex;
@@ -29,6 +32,20 @@ public class MeshGenerator {
         mesh = new Mesh();
         mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
         obj.GetComponent<MeshFilter>().mesh = mesh;
+
+        // Set constant data needed for marching cubes
+        int tableSize = CPUMarchingCubes.facetsTable.GetLength(0) * CPUMarchingCubes.facetsTable.GetLength(1);
+        int[] internalArray = new int[tableSize];
+        for (int i = 0; i < CPUMarchingCubes.facetsTable.GetLength(0); i++) {
+            for (int j = 0; j < CPUMarchingCubes.facetsTable.GetLength(1); j++) {
+                internalArray[i * 16 + j] = CPUMarchingCubes.facetsTable[i, j];
+            }
+        }
+        bufferFacetsTable = new ComputeBuffer(tableSize, 4, ComputeBufferType.Structured);
+        bufferFacetsTable.SetData(internalArray);
+        bufferFacetsTable.SetCounterValue(0);
+        // Do not dispose of this object before we get a chance to call Finalize
+        GC.KeepAlive(bufferFacetsTable);
 
         // Load the caustics-rendered material
         Material material = Resources.Load("Materials/Caustics", typeof(Material)) as Material;
@@ -57,6 +74,9 @@ public class MeshGenerator {
         GPUTriangle[] surfaceTriangles = new GPUTriangle[dotsPerAxis.x * dotsPerAxis.y * dotsPerAxis.z * 5];
         triangleBuffer.SetCounterValue(0);
 
+        marchingCubesShader.SetBuffer(0,"facetsTable", bufferFacetsTable);
+        marchingCubesShader.SetInt( "facetsWidth", CPUMarchingCubes.facetsTable.GetLength(1));
+
         marchingCubesShader.SetBuffer(0, "triangleBuffer", triangleBuffer);
         marchingCubesShader.SetBool("doInterpolate", doInterpolate);
         marchingCubesShader.SetBool("squishTerrain", squishTerrain);
@@ -68,12 +88,13 @@ public class MeshGenerator {
         marchingCubesShader.SetInts("dotsPerAxis", dotsPerAxis.x, dotsPerAxis.y, dotsPerAxis.z);
         marchingCubesShader.SetFloats("trianglePositionOffset", cubeCornerOffset.x, cubeCornerOffset.y, cubeCornerOffset.z);
         marchingCubesShader.SetFloats("perlinPositionOffset", perlinPositionOffset.x, perlinPositionOffset.y, perlinPositionOffset.z);
-
+        
         marchingCubesShader.Dispatch(0, 1 + (dotsPerAxis.x / 8), 1 + (dotsPerAxis.y / 8), 1 + (dotsPerAxis.z / 8));
 
         int triangleCount = GetAppendCount(triangleBuffer);
         triangleBuffer.GetData(surfaceTriangles);
         triangleBuffer.Dispose();
+
 
         Dictionary<Vector3, int> uniqueVertexes = new Dictionary<Vector3, int>();
         List<Vector3> vertices = new List<Vector3>();
@@ -131,4 +152,7 @@ public class MeshGenerator {
         return counter[0];
     }
 
+    public void Dispose() {
+        bufferFacetsTable.Dispose();
+    }
 }
