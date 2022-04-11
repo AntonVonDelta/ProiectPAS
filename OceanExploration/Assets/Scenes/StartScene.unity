@@ -236,7 +236,7 @@ MonoBehaviour:
   playerCamera: {fileID: 963194227}
   moveForceMagnitude: 20
   rotateAmount: 2.5
-  lookSpeed: 10
+  mouseMultiplier: 20
   smoothTime: 0.1
   lengthFromCenterToBack: 3.5
 --- !u!114 &655421685

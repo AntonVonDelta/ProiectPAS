@@ -12,9 +12,6 @@ public class PlayerController : MonoBehaviour {
     public float lengthFromCenterToBack = 1;
 
     private Rigidbody rb;
-    private Vector3 forwardOfVehiclerReference;
-    private Vector3 upwardsOfVehicleReference;
-    private Vector3 rightOfVehicleReference;
     private Vector3 positionOffset;
 
     private Vector3 cameraMovementVelocity = Vector3.zero;
@@ -23,9 +20,6 @@ public class PlayerController : MonoBehaviour {
     void Start() {
         rb = GetComponent<Rigidbody>();
 
-        forwardOfVehiclerReference = transform.InverseTransformVector(Vector3.forward).normalized;
-        upwardsOfVehicleReference = transform.InverseTransformVector(Vector3.up).normalized;
-        rightOfVehicleReference = transform.InverseTransformVector(Vector3.right).normalized;
         positionOffset = transform.InverseTransformPoint(playerCamera.transform.position);
 
         Cursor.lockState = CursorLockMode.Locked;
@@ -55,8 +49,10 @@ public class PlayerController : MonoBehaviour {
             float deltaAngleY = Mathf.Rad2Deg * Mathf.Atan2(-viewportPositionDelta.y, playerCamera.nearClipPlane);
 
             // Act with a force on the tail of the vehicler
-            // We have to negate because we are acting on the tail and thus pulling up will lower the nose
-            rb.AddForceAtPosition(-viewportPositionDelta * moveForceMagnitude, transform.position - transform.TransformDirection(forwardOfVehiclerReference) * lengthFromCenterToBack * transform.localScale.z);
+            // We have to negate viewportPositionDelta because we are acting on the tail and thus pulling up will lower the nose
+            Vector3 localMovementToGlobal = transform.TransformVector(-viewportPositionDelta);
+            rb.AddForceAtPosition(localMovementToGlobal * moveForceMagnitude,
+                transform.position - transform.forward * lengthFromCenterToBack * transform.localScale.z);
 
             // Restrict X axis angle
             Vector3 localEulerAngles = transform.localRotation.eulerAngles;
@@ -66,7 +62,7 @@ public class PlayerController : MonoBehaviour {
         }
 
         // Aply a forward force but until velocity is reached
-        ApplyForceToReachVelocity(rb, Input.GetAxis("Vertical") * transform.TransformDirection(forwardOfVehiclerReference) * moveForceMagnitude);
+        ApplyForceToReachVelocity(rb, Input.GetAxis("Vertical") * transform.forward * moveForceMagnitude);
 
         // Rotate from keyboard
         transform.Rotate(Vector3.up, Input.GetAxis("Horizontal") * rotateAmount, Space.World);
@@ -76,7 +72,7 @@ public class PlayerController : MonoBehaviour {
         Gizmos.color = Color.red;
 
         if (rb != null) Gizmos.DrawSphere(transform.position + rb.centerOfMass, 0.4f);
-        Gizmos.DrawWireSphere(transform.position - transform.TransformDirection(forwardOfVehiclerReference) * lengthFromCenterToBack * transform.localScale.z, 0.2f);
+        Gizmos.DrawWireSphere(transform.position - transform.forward * lengthFromCenterToBack * transform.localScale.z, 0.2f);
     }
 
     /// <summary>
