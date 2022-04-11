@@ -58,9 +58,10 @@ public class PlayerController : MonoBehaviour {
             transform.Rotate(0, deltaAngleX, 0, Space.World);
 
             // Restrict X axis angle
-            Vector3 localEulerAngles = transform.localEulerAngles;
-            localEulerAngles.x = Mathf.Clamp(localEulerAngles.x, 90 - 60, 90 + 60);
-            transform.localEulerAngles = localEulerAngles;
+            Vector3 localEulerAngles = transform.localRotation.eulerAngles;
+            localEulerAngles.x = Mathf.Clamp(localEulerAngles.x, -60, 60);
+            localEulerAngles.z = 0; // Do not roll on Z axis
+            transform.localRotation = Quaternion.Euler(localEulerAngles);
         }
 
         rb.AddForceAtPosition(Input.GetAxis("Vertical") * transform.TransformDirection(forwardOfVehiclerReference) * moveForceMagnitude, transform.position - transform.TransformDirection(forwardOfVehiclerReference) * transform.localScale.z);
