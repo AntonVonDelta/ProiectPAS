@@ -22,6 +22,7 @@ public class MeshGenerator {
 
     Mesh mesh;
     Vector3Int gridIndex;
+    Texture2D texFacetsTable;
 
     public MeshGenerator(GameObject obj, Vector3Int gridIndex) {
         this.gridIndex = gridIndex;
@@ -29,6 +30,17 @@ public class MeshGenerator {
         mesh = new Mesh();
         mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
         obj.GetComponent<MeshFilter>().mesh = mesh;
+
+
+        texFacetsTable = new Texture2D(256, 16, TextureFormat.R8, false);
+        byte[] internalArray = texFacetsTable.GetRawTextureData();
+        for(int i = 0; i <CPUMarchingCubes.facetsTable.GetLength(0); i++) {
+            for (int j = 0; j < CPUMarchingCubes.facetsTable.GetLength(1); j++) {
+                // This will convert -1 to 255 which will be converted back to -1 in the compute shader
+                internalArray[i * 16 + j] = (byte)CPUMarchingCubes.facetsTable[i, j];
+            }
+        }
+        texFacetsTable.Apply();
 
         // Load the caustics-rendered material
         Material material = Resources.Load("Materials/Caustics", typeof(Material)) as Material;
@@ -57,6 +69,7 @@ public class MeshGenerator {
         GPUTriangle[] surfaceTriangles = new GPUTriangle[dotsPerAxis.x * dotsPerAxis.y * dotsPerAxis.z * 5];
         triangleBuffer.SetCounterValue(0);
 
+        marchingCubesShader.SetTexture(0, "facetsTable", texFacetsTable);
         marchingCubesShader.SetBuffer(0, "triangleBuffer", triangleBuffer);
         marchingCubesShader.SetBool("doInterpolate", doInterpolate);
         marchingCubesShader.SetBool("squishTerrain", squishTerrain);
