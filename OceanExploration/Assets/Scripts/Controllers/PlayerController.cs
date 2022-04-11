@@ -52,11 +52,11 @@ public class PlayerController : MonoBehaviour {
             // We have to negate viewportPositionDelta because we are acting on the tail and thus pulling up will lower the nose
             Vector3 localMovementToGlobal = transform.TransformVector(-viewportPositionDelta);
             rb.AddForceAtPosition(localMovementToGlobal * moveForceMagnitude,
-                transform.position - transform.forward * lengthFromCenterToBack * transform.localScale.z);
+                transform.position - transform.forward * lengthFromCenterToBack * transform.localScale.z,ForceMode.VelocityChange);
 
             // Restrict X axis angle
             Vector3 localEulerAngles = transform.localRotation.eulerAngles;
-            localEulerAngles.x = Mathf.Clamp(ChangeAngleInterval(localEulerAngles.x), -60, 60);
+            localEulerAngles.x = Mathf.Clamp(ChangeAngleInterval(localEulerAngles.x), -60, 54);
             localEulerAngles.z = 0; // Do not roll on Z axis
             transform.localRotation = Quaternion.Euler(localEulerAngles);
         }
