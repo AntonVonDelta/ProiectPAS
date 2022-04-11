@@ -9,6 +9,7 @@ public class PlayerController : MonoBehaviour {
     public float rotateAmount = 2.5f;
     public float lookSpeed = 2f;
     public float smoothTime = 0.3f;
+    public float lengthFromCenterToBack = 1;
 
     private Rigidbody rb;
     private Vector3 forwardOfVehiclerReference;
@@ -64,10 +65,16 @@ public class PlayerController : MonoBehaviour {
             transform.localRotation = Quaternion.Euler(localEulerAngles);
         }
 
-        rb.AddForceAtPosition(Input.GetAxis("Vertical") * transform.TransformDirection(forwardOfVehiclerReference) * moveForceMagnitude, transform.position - transform.TransformDirection(forwardOfVehiclerReference) * transform.localScale.z);
+        rb.AddForceAtPosition(Input.GetAxis("Vertical") * transform.TransformDirection(forwardOfVehiclerReference) * moveForceMagnitude, transform.position - transform.TransformDirection(forwardOfVehiclerReference) * lengthFromCenterToBack * transform.localScale.z);
         transform.Rotate(Vector3.up, Input.GetAxis("Horizontal") * rotateAmount, Space.World);
     }
 
+    private void OnDrawGizmos() {
+        Gizmos.color = Color.red;
+
+        if (rb != null) Gizmos.DrawSphere(transform.position + rb.centerOfMass, 0.4f);
+        Gizmos.DrawWireSphere(transform.position - transform.TransformDirection(forwardOfVehiclerReference) * lengthFromCenterToBack * transform.localScale.z, 0.2f);
+    }
 
     /// <summary>
     /// Changes the angle interval from [0-360) to (-180, 180]
