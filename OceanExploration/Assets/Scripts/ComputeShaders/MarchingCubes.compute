@@ -380,7 +380,7 @@ void CSMain(uint3 executionId : SV_DispatchThreadID) {
 		//}
 
 		
-		float squishFactor = squishTerrain * lerp(1.0f, 0.0f, (cornerPosition[i].y - (cornerPosition[i].y % 5) - 0) / (dotsPerAxis.y * dotDistance - 0)) + (1 - squishTerrain) * 1;
+		float squishFactor = squishTerrain * lerp(1.0f, 0.0f, (cornerPosition[i].y - (cornerPosition[i].y % 4) - 0) / (dotsPerAxis.y * dotDistance - 0)) + (1 - squishTerrain) * 1;
 		bool onSurface = IsPointOnSurface(executionId + cubeIndexes[i]);
 		cornerValues[i] = onSurface * (surfaceValue - 1) + (1 - onSurface) * squishFactor * noise(mul(perlinPositionOffset + cornerPosition[i], perlinNoiseScale));
 		

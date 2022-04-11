@@ -260,8 +260,8 @@ MonoBehaviour:
   dotsPerUnit: 2
   doInterpolate: 1
   squishTerrain: 1
-  threshold: 0.55
-  perlinNoiseScale: 0.23
+  threshold: 0.46
+  perlinNoiseScale: 0.15
   plantPrefab: {fileID: 4193468509239237828, guid: 80ffa03657e3e1049ad00c1523757ca7, type: 3}
   plantsPerChunk: 2
   plantsLoadingRadius: 3
@@ -437,7 +437,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   m_LocalRotation: {x: 0.20589378, y: -0.005226202, z: 0.0010996185, w: 0.9785598}
-  m_LocalPosition: {x: 0, y: 16.448, z: -2.234}
+  m_LocalPosition: {x: 0, y: 16.142, z: -2.631}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
