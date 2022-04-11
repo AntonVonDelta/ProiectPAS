@@ -80,7 +80,7 @@ public class ChunkGenerator : MonoBehaviour {
 
                 // Skip already loaded chunks
                 // FindIndex() is faster than Any()
-                if (loadedChunks.FindIndex(el => el.gridIndex == tempChunk)!=-1) {
+                if (loadedChunks.FindIndex(el => el.gridIndex == tempChunk) != -1) {
                     continue;
                 }
 
@@ -96,18 +96,19 @@ public class ChunkGenerator : MonoBehaviour {
                 }
                 chunkObj.transform.position = tempChunkWorldPos + new Vector3(0, heightSize / 2, 0);
 
-                MeshGenerator meshGenerator = new MeshGenerator(chunkObj, tempChunk);
-                meshGenerator.marchingCubesShader = marchingCubesShader;
-                meshGenerator.scale = new Vector3(chunkSize, heightSize, chunkSize);
+                using (MeshGenerator meshGenerator = new MeshGenerator(chunkObj, tempChunk)) {
+                    meshGenerator.marchingCubesShader = marchingCubesShader;
+                    meshGenerator.scale = new Vector3(chunkSize, heightSize, chunkSize);
 
-                meshGenerator.doInterpolate = doInterpolate;
-                meshGenerator.squishTerrain = squishTerrain;
-                meshGenerator.closeLateralSurface = false;
-                meshGenerator.dotsPerUnit = dotsPerUnit;
-                meshGenerator.threshold = threshold;
-                meshGenerator.perlinNoiseScale = perlinNoiseScale;
+                    meshGenerator.doInterpolate = doInterpolate;
+                    meshGenerator.squishTerrain = squishTerrain;
+                    meshGenerator.closeLateralSurface = false;
+                    meshGenerator.dotsPerUnit = dotsPerUnit;
+                    meshGenerator.threshold = threshold;
+                    meshGenerator.perlinNoiseScale = perlinNoiseScale;
 
-                meshGenerator.SetObjectMesh();
+                    meshGenerator.SetObjectMesh();
+                }
 
                 // Set collision mesh
                 chunkObj.GetComponent<MeshCollider>().sharedMesh = chunkObj.GetComponent<MeshFilter>().sharedMesh;

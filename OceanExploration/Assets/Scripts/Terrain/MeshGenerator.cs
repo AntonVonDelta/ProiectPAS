@@ -1,9 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
 
-public class MeshGenerator {
+public class MeshGenerator: IDisposable {
     struct GPUTriangle {
         public Vector3 p1;
         public Vector3 p2;
@@ -43,6 +44,8 @@ public class MeshGenerator {
         bufferFacetsTable = new ComputeBuffer(tableSize, 4, ComputeBufferType.Structured);
         bufferFacetsTable.SetData(internalArray);
         bufferFacetsTable.SetCounterValue(0);
+        // Do not dispose of this object before we get a chance to call Finalize
+        GC.KeepAlive(bufferFacetsTable);
 
         // Load the caustics-rendered material
         Material material = Resources.Load("Materials/Caustics", typeof(Material)) as Material;
@@ -149,7 +152,7 @@ public class MeshGenerator {
         return counter[0];
     }
 
-    ~MeshGenerator() {
+    public void Dispose() {
         bufferFacetsTable.Dispose();
     }
 }
