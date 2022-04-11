@@ -104,11 +104,13 @@ void CSMain(uint3 executionId : SV_DispatchThreadID) {
 	float cornerValues[8];
 	float3 cornerPosition[8];
 	
-	
+	uint w;
+	uint h;
+	facetsTable.GetDimensions(w, h);
 	Triangle t;
 	t.p1 = float3(facetsTable.Load(int3(0, 0, 0)),0,0);
-	t.p2 = float3(facetsTable.Load(int3(1, 1, 0)), 0, 0);
-	t.p3 = float3(facetsTable.Load(int3(2, 2, 0)), 0, 0);
+	t.p2 = float3(facetsTable.Load(int3(executionId.x, executionId.y, 0)), 0, 0);
+	t.p3 = float3(w, h, 0);
 	triangleBuffer.Append(t);
 	return;
 	

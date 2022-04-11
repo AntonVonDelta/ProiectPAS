@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Collections;
 using UnityEngine;
 
 public class MeshGenerator {
@@ -32,12 +33,12 @@ public class MeshGenerator {
         obj.GetComponent<MeshFilter>().mesh = mesh;
 
 
-        texFacetsTable = new Texture2D(256, 16, TextureFormat.R8, false);
-        byte[] internalArray = texFacetsTable.GetRawTextureData();
-        for(int i = 0; i <CPUMarchingCubes.facetsTable.GetLength(0); i++) {
+        texFacetsTable = new Texture2D(256, 16, TextureFormat.RGBA32, false);
+        NativeArray<int> internalArray = texFacetsTable.GetRawTextureData<int>();
+        for (int i = 0; i < CPUMarchingCubes.facetsTable.GetLength(0); i++) {
             for (int j = 0; j < CPUMarchingCubes.facetsTable.GetLength(1); j++) {
                 // This will convert -1 to 255 which will be converted back to -1 in the compute shader
-                internalArray[i * 16 + j] = 255;// (byte)CPUMarchingCubes.facetsTable[i, j];
+                internalArray[i * 16 + j] =CPUMarchingCubes.facetsTable[i, j];
             }
         }
         texFacetsTable.Apply();
@@ -89,6 +90,7 @@ public class MeshGenerator {
         triangleBuffer.Dispose();
 
         Application.Quit();
+        return;
 
         Dictionary<Vector3, int> uniqueVertexes = new Dictionary<Vector3, int>();
         List<Vector3> vertices = new List<Vector3>();
