@@ -7,7 +7,7 @@ public class PlayerController : MonoBehaviour {
     public Camera playerCamera;
     public float moveForceMagnitude = 5f;
     public float rotateAmount = 2.5f;
-    public float lookSpeed = 2f;
+    public float mouseMultiplier = 2f;
     public float smoothTime = 0.3f;
     public float lengthFromCenterToBack = 1;
 
@@ -47,16 +47,16 @@ public class PlayerController : MonoBehaviour {
         playerCamera.transform.LookAt(transform);
 
         if (IsMouseOverGameWindow()) {
-            Vector3 positionDelta = new Vector3(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y")) * lookSpeed;
+            Vector3 positionDelta = new Vector3(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y")) * mouseMultiplier;
             Vector3 viewportPositionDelta = playerCamera.ScreenToViewportPoint(positionDelta);
 
             float deltaAngleX = Mathf.Rad2Deg * Mathf.Atan2(viewportPositionDelta.x, playerCamera.nearClipPlane);
             // We inverse the Y value because Unity has the viewport inversed in comparison to the screen space
             float deltaAngleY = Mathf.Rad2Deg * Mathf.Atan2(-viewportPositionDelta.y, playerCamera.nearClipPlane);
 
-            // x local, y global...can't see it? Well it means you suck at rotations
-            transform.Rotate(deltaAngleY, 0, 0, Space.Self);
-            transform.Rotate(0, deltaAngleX, 0, Space.World);
+            // Act with a force on the tail of the vehicler
+            // We have to negate because we are acting on the tail and thus pulling up will lower the nose
+            rb.AddForceAtPosition(-viewportPositionDelta * moveForceMagnitude, transform.position - transform.TransformDirection(forwardOfVehiclerReference) * lengthFromCenterToBack * transform.localScale.z);
 
             // Restrict X axis angle
             Vector3 localEulerAngles = transform.localRotation.eulerAngles;
@@ -65,7 +65,10 @@ public class PlayerController : MonoBehaviour {
             transform.localRotation = Quaternion.Euler(localEulerAngles);
         }
 
-        rb.AddForceAtPosition(Input.GetAxis("Vertical") * transform.TransformDirection(forwardOfVehiclerReference) * moveForceMagnitude, transform.position - transform.TransformDirection(forwardOfVehiclerReference) * lengthFromCenterToBack * transform.localScale.z);
+        // Aply a forward force but until velocity is reached
+        ApplyForceToReachVelocity(rb, Input.GetAxis("Vertical") * transform.TransformDirection(forwardOfVehiclerReference) * moveForceMagnitude);
+
+        // Rotate from keyboard
         transform.Rotate(Vector3.up, Input.GetAxis("Horizontal") * rotateAmount, Space.World);
     }
 
@@ -103,4 +106,25 @@ public class PlayerController : MonoBehaviour {
         if (viewport.x < 0 || viewport.x > 1 || viewport.y < 0 || viewport.y > 1) return false;
         return true;
     }
+
+
+    //https://github.com/ditzel/UnityOceanWavesAndShip/blob/master/Waves/Assets/PhysicsHelper.cs
+    public static void ApplyForceToReachVelocity(Rigidbody rigidbody, Vector3 velocity, float force = 1, ForceMode mode = ForceMode.Force) {
+        if (force == 0 || velocity.magnitude == 0)
+            return;
+
+        velocity = velocity + velocity.normalized * 0.2f * rigidbody.drag;
+
+        //force = 1 => need 1 s to reach velocity (if mass is 1) => force can be max 1 / Time.fixedDeltaTime
+        force = Mathf.Clamp(force, -rigidbody.mass / Time.fixedDeltaTime, rigidbody.mass / Time.fixedDeltaTime);
+
+        //dot product is a projection from rhs to lhs with a length of result / lhs.magnitude https://www.youtube.com/watch?v=h0NJK4mEIJU
+        if (rigidbody.velocity.magnitude == 0) {
+            rigidbody.AddForce(velocity * force, mode);
+        } else {
+            var velocityProjectedToTarget = (velocity.normalized * Vector3.Dot(velocity, rigidbody.velocity) / velocity.magnitude);
+            rigidbody.AddForce((velocity - velocityProjectedToTarget) * force, mode);
+        }
+    }
+
 }
