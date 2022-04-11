@@ -37,7 +37,7 @@ public class MeshGenerator {
         for(int i = 0; i <CPUMarchingCubes.facetsTable.GetLength(0); i++) {
             for (int j = 0; j < CPUMarchingCubes.facetsTable.GetLength(1); j++) {
                 // This will convert -1 to 255 which will be converted back to -1 in the compute shader
-                internalArray[i * 16 + j] = (byte)CPUMarchingCubes.facetsTable[i, j];
+                internalArray[i * 16 + j] = 255;// (byte)CPUMarchingCubes.facetsTable[i, j];
             }
         }
         texFacetsTable.Apply();
@@ -87,6 +87,8 @@ public class MeshGenerator {
         int triangleCount = GetAppendCount(triangleBuffer);
         triangleBuffer.GetData(surfaceTriangles);
         triangleBuffer.Dispose();
+
+        Application.Quit();
 
         Dictionary<Vector3, int> uniqueVertexes = new Dictionary<Vector3, int>();
         List<Vector3> vertices = new List<Vector3>();
