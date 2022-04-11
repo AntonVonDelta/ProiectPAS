@@ -72,7 +72,7 @@ public class MeshGenerator {
         triangleBuffer.SetCounterValue(0);
 
         marchingCubesShader.SetBuffer(0,"facetsTable", bufferFacetsTable);
-        marchingCubesShader.SetInt( "facetsWidth", CPUMarchingCubes.facetsTable.GetLength(0));
+        marchingCubesShader.SetInt( "facetsWidth", CPUMarchingCubes.facetsTable.GetLength(1));
 
         marchingCubesShader.SetBuffer(0, "triangleBuffer", triangleBuffer);
         marchingCubesShader.SetBool("doInterpolate", doInterpolate);
@@ -85,13 +85,12 @@ public class MeshGenerator {
         marchingCubesShader.SetInts("dotsPerAxis", dotsPerAxis.x, dotsPerAxis.y, dotsPerAxis.z);
         marchingCubesShader.SetFloats("trianglePositionOffset", cubeCornerOffset.x, cubeCornerOffset.y, cubeCornerOffset.z);
         marchingCubesShader.SetFloats("perlinPositionOffset", perlinPositionOffset.x, perlinPositionOffset.y, perlinPositionOffset.z);
-
+        
         marchingCubesShader.Dispatch(0, 1 + (dotsPerAxis.x / 8), 1 + (dotsPerAxis.y / 8), 1 + (dotsPerAxis.z / 8));
 
         int triangleCount = GetAppendCount(triangleBuffer);
         triangleBuffer.GetData(surfaceTriangles);
         triangleBuffer.Dispose();
-
 
 
         Dictionary<Vector3, int> uniqueVertexes = new Dictionary<Vector3, int>();
