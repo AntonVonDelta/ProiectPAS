@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour {
     public Camera playerCamera;
+    public GameObject motorParticleSystem;
     public float moveForceMagnitude = 5f;
     public float rotateAmount = 2.5f;
     public float mouseMultiplier = 2f;
@@ -12,15 +13,16 @@ public class PlayerController : MonoBehaviour {
     public float lengthFromCenterToBack = 1;
 
     private Rigidbody rb;
-    private Vector3 positionOffset;
-
+    private Vector3 localCameraPosition;
+    private Vector3 localMotorParticlePosition;
     private Vector3 cameraMovementVelocity = Vector3.zero;
 
-    // Start is called before the first frame update
+
     void Start() {
         rb = GetComponent<Rigidbody>();
 
-        positionOffset = transform.InverseTransformPoint(playerCamera.transform.position);
+        localCameraPosition = transform.InverseTransformPoint(playerCamera.transform.position);
+        localMotorParticlePosition = transform.InverseTransformPoint(motorParticleSystem.transform.position);
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -28,8 +30,12 @@ public class PlayerController : MonoBehaviour {
 
 
     private void FixedUpdate() {
+        // Move particle system
+        //motorParticleSystem.transform.position = transform.TransformPoint(localMotorParticlePosition);
+        //motorParticleSystem.transform.rotation = transform.rotation;
+
         // Move camera to follow vehicle
-        Vector3 cameraWorldPos = transform.TransformPoint(positionOffset);
+        Vector3 cameraWorldPos = transform.TransformPoint(localCameraPosition);
         playerCamera.transform.position = Vector3.SmoothDamp(playerCamera.transform.position, cameraWorldPos, ref cameraMovementVelocity, smoothTime);
 
         // Move camera in the direction the vehicle is pointing
@@ -52,7 +58,7 @@ public class PlayerController : MonoBehaviour {
             // We have to negate viewportPositionDelta because we are acting on the tail and thus pulling up will lower the nose
             Vector3 localMovementToGlobal = transform.TransformVector(-viewportPositionDelta);
             rb.AddForceAtPosition(localMovementToGlobal * moveForceMagnitude,
-                transform.position - transform.forward * lengthFromCenterToBack * transform.localScale.z,ForceMode.VelocityChange);
+                transform.position - transform.forward * lengthFromCenterToBack * transform.localScale.z, ForceMode.VelocityChange);
 
             // Restrict X axis angle
             Vector3 localEulerAngles = transform.localRotation.eulerAngles;
