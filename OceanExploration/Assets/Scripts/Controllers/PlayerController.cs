@@ -59,7 +59,7 @@ public class PlayerController : MonoBehaviour {
 
             // Restrict X axis angle
             Vector3 localEulerAngles = transform.localRotation.eulerAngles;
-            localEulerAngles.x = Mathf.Clamp(localEulerAngles.x, -60, 60);
+            localEulerAngles.x = Mathf.Clamp(ChangeAngleInterval(localEulerAngles.x), -60, 60);
             localEulerAngles.z = 0; // Do not roll on Z axis
             transform.localRotation = Quaternion.Euler(localEulerAngles);
         }
@@ -68,6 +68,28 @@ public class PlayerController : MonoBehaviour {
         transform.Rotate(Vector3.up, Input.GetAxis("Horizontal") * rotateAmount, Space.World);
     }
 
+
+    /// <summary>
+    /// Changes the angle interval from [0-360) to (-180, 180]
+    /// </summary>
+    /// <param name="angle"></param>
+    /// <returns></returns>
+    float ChangeAngleInterval(float angle) {
+        return (angle > 180) ? angle - 360 : angle;
+    }
+
+    /// <summary>
+    /// Counter clockwise test
+    /// </summary>
+    bool isAngleBetween(float angle, float min, float max) {
+        if (min < max) {
+            if (min < angle && angle < max) return true;
+        } else {
+            if (angle > min) return true;
+            if (angle < max) return true;
+        }
+        return false;
+    }
 
     bool IsMouseOverGameWindow() {
         var viewport = playerCamera.ScreenToViewportPoint(Input.mousePosition);
