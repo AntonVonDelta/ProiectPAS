@@ -35,7 +35,9 @@ static int2 edgeToVertexIndexes[] = {
 	{ 3, 7 },
 };
 
-Texture2D<int> facetsTable;
+
+Buffer<int> facetsTable;
+int facetsWidth;
 AppendStructuredBuffer<Triangle> triangleBuffer;
 bool doInterpolate;
 bool closeLateralSurface; // Whether to close the sides of the mesh
@@ -104,74 +106,65 @@ void CSMain(uint3 executionId : SV_DispatchThreadID) {
 	float cornerValues[8];
 	float3 cornerPosition[8];
 	
-	uint w;
-	uint h;
-	facetsTable.GetDimensions(w, h);
-	Triangle t;
-	t.p1 = float3(facetsTable.Load(int3(0, 0, 0)),0,0);
-	t.p2 = float3(facetsTable.Load(int3(executionId.x, executionId.y, 0)), 0, 0);
-	t.p3 = float3(w, h, 0);
-	triangleBuffer.Append(t);
-	return;
 	
-	////[unroll]
-	//for (int i = 0; i < 8; i++) {
-	//	cornerPosition[i] = mul((executionId + cubeIndexes[i]), dotDistance);
+	//[unroll]
+	for (int i = 0; i < 8; i++) {
+		cornerPosition[i] = mul((executionId + cubeIndexes[i]), dotDistance);
 		
-	//	//float squishFactor =lerp(1.0f, 0.0f, (cornerPosition[i].y - 0) / (dotsPerAxis.y * dotDistance - 0));
-	//	//if (cornerPosition[i].y <= groundHeight) {
-	//	//	cornerValues[i] = surfaceValue + 1;
-	//	//	continue;
-	//	//}
-	//	//if (IsPointOnSurface(executionId + cubeIndexes[i])) {
-	//	//	cornerValues[i] = surfaceValue - 1;
-	//	//} else {
-	//	//	cornerValues[i] = squishFactor*noise(mul(cornerPosition[i], perlinNoiseScale)); // / 2 + 0.5f;
-	//	//}
+		//float squishFactor =lerp(1.0f, 0.0f, (cornerPosition[i].y - 0) / (dotsPerAxis.y * dotDistance - 0));
+		//if (cornerPosition[i].y <= groundHeight) {
+		//	cornerValues[i] = surfaceValue + 1;
+		//	continue;
+		//}
+		//if (IsPointOnSurface(executionId + cubeIndexes[i])) {
+		//	cornerValues[i] = surfaceValue - 1;
+		//} else {
+		//	cornerValues[i] = squishFactor*noise(mul(cornerPosition[i], perlinNoiseScale)); // / 2 + 0.5f;
+		//}
 
 		
-	//	float squishFactor = squishTerrain * lerp(1.0f, 0.0f, (cornerPosition[i].y - (cornerPosition[i].y % 4) - 0) / (dotsPerAxis.y * dotDistance - 0)) + (1 - squishTerrain) * 1;
-	//	bool onSurface = IsPointOnSurface(executionId + cubeIndexes[i]);
-	//	cornerValues[i] = onSurface * (surfaceValue - 1) + (1 - onSurface) * squishFactor * noise(mul(perlinPositionOffset + cornerPosition[i], perlinNoiseScale));
+		float squishFactor = squishTerrain * lerp(1.0f, 0.0f, (cornerPosition[i].y - (cornerPosition[i].y % 4) - 0) / (dotsPerAxis.y * dotDistance - 0)) + (1 - squishTerrain) * 1;
+		bool onSurface = IsPointOnSurface(executionId + cubeIndexes[i]);
+		cornerValues[i] = onSurface * (surfaceValue - 1) + (1 - onSurface) * squishFactor * noise(mul(perlinPositionOffset + cornerPosition[i], perlinNoiseScale));
 		
-	//	bool onGround = cornerPosition[i].y == 0;
-	//	cornerValues[i] = onGround * (surfaceValue + 1) + (1 - onGround) * cornerValues[i];
-	//}
+		bool onGround = cornerPosition[i].y == 0;
+		cornerValues[i] = onGround * (surfaceValue + 1) + (1 - onGround) * cornerValues[i];
+	}
 	
 	
- //   // Set the bits according to which vertex is inside the volume/surface
-	//int edgeTableIndex = 0;
+    // Set the bits according to which vertex is inside the volume/surface
+	int edgeTableIndex = 0;
 	
-	////[unroll]
-	//for (int j = 0; j < 8; j++) {
-	//	edgeTableIndex += (cornerValues[j] > surfaceValue) * (1 << j);
-	//}
+	//[unroll]
+	for (int j = 0; j < 8; j++) {
+		edgeTableIndex += (cornerValues[j] > surfaceValue) * (1 << j);
+	}
 	
-	////Triangle tt;
-	////tt.p1 = executionId;
-	////tt.p2 = cornerPosition[0];
-	////tt.p3 = float3(edgeTableIndex, surfaceValue, cornerValues[2]);
-	////triangleBuffer.Append(tt);
-	////return;
+	//Triangle tt;
+	//tt.p1 = executionId;
+	//tt.p2 = cornerPosition[0];
+	//tt.p3 = float3(edgeTableIndex, surfaceValue, cornerValues[2]);
+	//triangleBuffer.Append(tt);
+	//return;
 	
-	//for (int k = 0; k < 15; k += 3) {
-	//	if (facetsTable[edgeTableIndex][k] == -1)
-	//		break;
+	for (int k = 0; k < 15; k += 3) {
+		if (facetsTable[edgeTableIndex*facetsWidth+k] == -1)
+			break;
 
-	//	Triangle t;
+		Triangle t;
 
-	//	int edge0 = facetsTable[edgeTableIndex][k];
-	//	int edge1 = facetsTable[edgeTableIndex][k + 1];
-	//	int edge2 = facetsTable[edgeTableIndex][k + 2];
+		int edge0 = facetsTable[edgeTableIndex * facetsWidth + k];
+		int edge1 = facetsTable[edgeTableIndex * facetsWidth + k + 1];
+		int edge2 = facetsTable[edgeTableIndex * facetsWidth + k + 2];
 		
-	//	t.p1 = trianglePositionOffset + InterpolatePoints(cornerPosition[edgeToVertexIndexes[edge0][0]], cornerPosition[edgeToVertexIndexes[edge0][1]],
-	//							cornerValues[edgeToVertexIndexes[edge0][0]], cornerValues[edgeToVertexIndexes[edge0][1]]);
-	//	t.p2 = trianglePositionOffset + InterpolatePoints(cornerPosition[edgeToVertexIndexes[edge1][0]], cornerPosition[edgeToVertexIndexes[edge1][1]],
-	//							cornerValues[edgeToVertexIndexes[edge1][0]], cornerValues[edgeToVertexIndexes[edge1][1]]);
-	//	t.p3 = trianglePositionOffset + InterpolatePoints(cornerPosition[edgeToVertexIndexes[edge2][0]], cornerPosition[edgeToVertexIndexes[edge2][1]],
-	//							cornerValues[edgeToVertexIndexes[edge2][0]], cornerValues[edgeToVertexIndexes[edge2][1]]);
+		t.p1 = trianglePositionOffset + InterpolatePoints(cornerPosition[edgeToVertexIndexes[edge0][0]], cornerPosition[edgeToVertexIndexes[edge0][1]],
+								cornerValues[edgeToVertexIndexes[edge0][0]], cornerValues[edgeToVertexIndexes[edge0][1]]);
+		t.p2 = trianglePositionOffset + InterpolatePoints(cornerPosition[edgeToVertexIndexes[edge1][0]], cornerPosition[edgeToVertexIndexes[edge1][1]],
+								cornerValues[edgeToVertexIndexes[edge1][0]], cornerValues[edgeToVertexIndexes[edge1][1]]);
+		t.p3 = trianglePositionOffset + InterpolatePoints(cornerPosition[edgeToVertexIndexes[edge2][0]], cornerPosition[edgeToVertexIndexes[edge2][1]],
+								cornerValues[edgeToVertexIndexes[edge2][0]], cornerValues[edgeToVertexIndexes[edge2][1]]);
 		
-	//	triangleBuffer.Append(t);
-	//}
+		triangleBuffer.Append(t);
+	}
 
 }
