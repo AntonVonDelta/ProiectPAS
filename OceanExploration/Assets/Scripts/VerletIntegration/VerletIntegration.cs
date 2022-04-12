@@ -8,14 +8,11 @@ public class VerletIntegration : MonoBehaviour {
         public Vector3 oldPos;
         public Vector3 pos;
         public bool locked;
-        public bool reactToCollisions;
 
-
-        public VerletPoint(Vector3 pos, bool locked = false, bool reactToCollisions = false) {
+        public VerletPoint(Vector3 pos, bool locked = false) {
             this.oldPos = pos;
             this.pos = pos;
             this.locked = locked;
-            this.reactToCollisions = reactToCollisions;
         }
     };
 
@@ -35,7 +32,8 @@ public class VerletIntegration : MonoBehaviour {
     }
 
     public Material linesMaterial;
-    public bool drawGizmo = true;
+    public bool drawConstraintLines = false;
+    public bool drawCollisionPoints = false;
 
     [Header("Physics settings")]
     public Vector3 gravity = Vector3.up * 0.001f;
@@ -116,15 +114,21 @@ public class VerletIntegration : MonoBehaviour {
 
 
     private void OnDrawGizmos() {
-        Gizmos.color = Color.red;
+        if (drawConstraintLines) {
+            Gizmos.color = Color.red;
+            for (int i = 0; i < rigidLines.Count; i++) {
+                RigidLine line = rigidLines[i];
+                VerletPoint p1 = simulationPoints[line.pIndex1];
+                VerletPoint p2 = simulationPoints[line.pIndex2];
+                Gizmos.DrawLine(p1.pos, p2.pos);
+            }
+        }
 
-        if (!drawGizmo) return;
-
-        for (int i = 0; i < rigidLines.Count; i++) {
-            RigidLine line = rigidLines[i];
-            VerletPoint p1 = simulationPoints[line.pIndex1];
-            VerletPoint p2 = simulationPoints[line.pIndex2];
-            Gizmos.DrawLine(p1.pos, p2.pos);
+        if (drawCollisionPoints) {
+            Gizmos.color = Color.green;
+            for (int i = 0; i < simulationPoints.Count; i++) {
+                Gizmos.DrawSphere(simulationPoints[i].pos, 0.2f);
+            }
         }
     }
 

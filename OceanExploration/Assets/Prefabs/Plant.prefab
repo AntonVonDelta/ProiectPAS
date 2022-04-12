@@ -58,7 +58,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   linesMaterial: {fileID: 2100000, guid: 3fbc99d875b15b74086c605c55e27fbd, type: 2}
-  drawGizmo: 0
+  drawConstraintLines: 0
+  drawCollisionPoints: 0
   gravity: {x: 0, y: 0.001, z: 0}
   friction: 0.99
   constantJitter: 0.05

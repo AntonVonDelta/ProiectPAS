@@ -184,7 +184,6 @@ public class PlantGenerator {
             float adjustedDistance = 2 * Distance(distance, linearIncreaseFactor, i);
 
             rigidLines.Add(new RigidLine(startIndex1 + i, startIndex2 + i, adjustedDistance));
-
         }
     }
     private void CrossConnectTwoSymetricalChains(Branch firstBranch, Branch secondBranch, float distance, float linearIncreaseFactor) {
