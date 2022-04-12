@@ -1,0 +1,2 @@
+// Ignore unsaved pptx files
+~$*.pptx
