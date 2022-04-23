@@ -50,11 +50,12 @@ Shader "Unlit/TestUnlitShader"
 
             fixed4 frag (v2f i) : SV_Target
             {
-                // sample the texture
-                fixed4 col = tex2D(_CameraDepthTexture, i.uv);
-                // apply fog
-                //UNITY_APPLY_FOG(i.fogCoord, col);
-                return col;
+                // sample the color texture
+                fixed4 col = tex2D(_MainTex, i.uv);
+
+                fixed4 depth_col = tex2D(_CameraDepthTexture, i.uv);
+                
+                return col+ depth_col;
             }
 
             /*half4 frag(v2f i) : SV_Target{
