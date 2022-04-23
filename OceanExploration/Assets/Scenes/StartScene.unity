@@ -5475,6 +5475,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 23000010985154752, guid: c9c10e442362b304fa498afd8bec3b1c, type: 3}
+      propertyPath: m_DynamicOccludee
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 23000010985154752, guid: c9c10e442362b304fa498afd8bec3b1c, type: 3}
+      propertyPath: m_RenderingLayerMask
+      value: 32
+      objectReference: {fileID: 0}
     - target: {fileID: 64000010885364042, guid: c9c10e442362b304fa498afd8bec3b1c, type: 3}
       propertyPath: m_Convex
       value: 1
