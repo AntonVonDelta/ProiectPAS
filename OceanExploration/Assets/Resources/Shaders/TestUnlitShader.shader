@@ -1,3 +1,5 @@
+// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
 // Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
 
 // Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
@@ -43,8 +45,12 @@ Shader "Unlit/TestUnlitShader"
 				o.pos = UnityObjectToClipPos(v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
 
-				o.view_dir =normalize(WorldSpaceViewDir(v.vertex));//  normalize(mul(unity_ObjectToWorld, v.vertex)); //
+				o.view_dir =WorldSpaceViewDir(v.vertex);
+				//o.view_dir = normalize(mul(unity_ObjectToWorld, v.vertex));
+				//o.view_dir = normalize(ObjSpaceViewDir(v.vertex));
 
+				//float3 worldPos = mul(unity_ObjectToWorld, float4(v.vertex.xyz, 1.0)).xyz;
+				//o.view_dir = worldPos;// -_WorldSpaceCameraPos;
 				return o;
 			}
 
@@ -54,9 +60,6 @@ Shader "Unlit/TestUnlitShader"
 
 				// Sample the color texture
 				fixed4 col = tex2D(_MainTex, i.uv);
-				
-				// Test this one from here https://github.com/keijiro/unity-shaderfog-example/blob/master/Assets/Shaders/ShaderFog.shader
-				//float zpos = mul(UNITY_MATRIX_MVP, v.vertex).z;
 
 				// God response: https://answers.unity.com/questions/877170/render-scene-depth-to-a-texture.html
 				float depth = UNITY_SAMPLE_DEPTH(tex2D(_CameraDepthTexture, i.uv));
@@ -73,20 +76,28 @@ Shader "Unlit/TestUnlitShader"
 				
 				if (depth >= 1.0f) {
 					// Affect very far away regions like skybox
-					float3 dir =normalize( i.view_dir);
-					dir= mul(dir, ocean_surface - _WorldSpaceCameraPos.y);
+					// Here dir.z is actually 0
+					float3 dir = normalize( i.view_dir);
 
-					worldDepth = length(dir);
+					if (dir.y == 0) dir.y = 0.0001;
+
+					// Make the y component to be of size 1
+					dir = mul(dir, 1.0f/dir.y);
+					dir = mul(dir, ocean_surface - _WorldSpaceCameraPos.y);
+
+					// pow for debug adjustments
+					worldDepth = pow(length(dir),1);
+
+					// For debugging
+					fixed4 debug_color = fixed4(1,0,0,0);
+					if (worldDepth < 5) {
+						return debug_color * (worldDepth/5);
+					}
+					return debug_color;
 				}
-
 				float fogVar = saturate(1.0 - (fog_end - worldDepth) / (fog_end - fog_start));
 
-				if (worldDepth < 3.2015f) {
-					return fixed4(0,0,0,0);
-				}
-
 				return lerp(col, ocean_color, fogVar);
-				//return mul(ocean_color, 1-depth);
 			}
 			ENDCG
 		}
