@@ -1,3 +1,5 @@
+// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
+
 // Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
 
 Shader "Unlit/TestUnlitShader"
@@ -16,8 +18,6 @@ Shader "Unlit/TestUnlitShader"
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
-			#pragma multi_compile_fog
-
 
 			#include "UnityCG.cginc"
 
@@ -28,8 +28,8 @@ Shader "Unlit/TestUnlitShader"
 
 			struct v2f {
 				float4 pos : SV_POSITION;
-				half fog : TEXCOORD1;
 				float2 uv : TEXCOORD0;
+				float3 saved_vertex : TEXCOORD1;
 			};
 
 			// From the docs I can see this will be automatically populated with the depth texture
@@ -45,9 +45,9 @@ Shader "Unlit/TestUnlitShader"
 				o.pos = UnityObjectToClipPos(v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
 
-				float diff = unity_FogEnd.x - unity_FogStart.x;
-				float invDiff = 1.0f / diff;
-				o.fog = clamp((unity_FogEnd.x - length(o.pos.xyz)) * invDiff, 0.0, 1.0);
+
+				o.saved_vertex =normalize(WorldSpaceViewDir(v.vertex));//  normalize(mul(unity_ObjectToWorld, v.vertex)); //
+
 				return o;
 			}
 
@@ -70,6 +70,12 @@ Shader "Unlit/TestUnlitShader"
 				fixed4 ocean_color = fixed4(0, 0.486,0.905,0);
 
 				float fogVar = saturate(1.0 - (10 - worldDepth) / (10 - 0));
+				float angle = degrees(atan2(i.saved_vertex.z, i.saved_vertex.x))%360;
+
+				if (angle<30) {
+					fogVar = 0;
+				}
+
 				return lerp(col, ocean_color, fogVar);
 				//return mul(ocean_color, 1-depth);
 			}
