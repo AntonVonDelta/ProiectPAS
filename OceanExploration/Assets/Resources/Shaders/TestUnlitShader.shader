@@ -29,7 +29,7 @@ Shader "Unlit/TestUnlitShader"
 			struct v2f {
 				float4 pos : SV_POSITION;
 				float2 uv : TEXCOORD0;
-				float3 saved_vertex : TEXCOORD1;
+				float3 view_dir : TEXCOORD1;
 			};
 
 			// From the docs I can see this will be automatically populated with the depth texture
@@ -37,16 +37,13 @@ Shader "Unlit/TestUnlitShader"
 			sampler2D _CameraDepthTexture;
 			sampler2D _MainTex;
 			float4 _MainTex_ST;
-			uniform half4 unity_FogStart;
-			uniform half4 unity_FogEnd;
 
 			v2f vert(appdata v) {
 				v2f o;
 				o.pos = UnityObjectToClipPos(v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
 
-
-				o.saved_vertex =normalize(WorldSpaceViewDir(v.vertex));//  normalize(mul(unity_ObjectToWorld, v.vertex)); //
+				o.view_dir =normalize(WorldSpaceViewDir(v.vertex));//  normalize(mul(unity_ObjectToWorld, v.vertex)); //
 
 				return o;
 			}
@@ -66,14 +63,26 @@ Shader "Unlit/TestUnlitShader"
 				float worldDepth = LinearEyeDepth(depth);	// Real z value away from camera
 				depth = pow(Linear01Depth(depth), 1.0f);
 
+				// Constants
+				float fog_start = 0;
+				float fog_end = 10;
+
 				// Red, Green, Blue
 				fixed4 ocean_color = fixed4(0, 0.486,0.905,0);
+				float ocean_surface = 20;
+				
+				if (depth >= 1.0f) {
+					// Affect very far away regions like skybox
+					float3 dir =normalize( i.view_dir);
+					dir= mul(dir, ocean_surface - _WorldSpaceCameraPos.y);
 
-				float fogVar = saturate(1.0 - (10 - worldDepth) / (10 - 0));
-				float angle = degrees(atan2(i.saved_vertex.z, i.saved_vertex.x))%360;
+					worldDepth = length(dir);
+				}
 
-				if (angle<30) {
-					fogVar = 0;
+				float fogVar = saturate(1.0 - (fog_end - worldDepth) / (fog_end - fog_start));
+
+				if (worldDepth < 3.2015f) {
+					return fixed4(0,0,0,0);
 				}
 
 				return lerp(col, ocean_color, fogVar);
