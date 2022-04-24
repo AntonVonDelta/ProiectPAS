@@ -40,13 +40,20 @@ Shader "Unlit/TestUnlitShader"
 			sampler2D _MainTex;
 			float4 _MainTex_ST;
 
+
+			// Din testele facute cred ca skyboxul nu poate fi folosit asa cum imi doream eu
+			// Se pare ca functia vert nu este apelata (evident deoarece skyboxul nu are vertexes si nici mesh)
+			// Cu toate acestea frag este apelat insa nu are setat view_dir(scris in vert) pentru fiecare pixel
+			// Si deci culoarea nu merge...cred. In unele cazuri cand schimbam cum este calculata directia pixelului
+			// skyboxul era intr-adevar "shaded" dar nu corect
+
 			v2f vert(appdata v) {
 				v2f o;
 				o.pos = UnityObjectToClipPos(v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
 
-				o.view_dir =WorldSpaceViewDir(v.vertex);
-				//o.view_dir = normalize(mul(unity_ObjectToWorld, v.vertex));
+				//o.view_dir = WorldSpaceViewDir(v.vertex);
+				o.view_dir = normalize(mul(unity_ObjectToWorld, v.vertex));
 				//o.view_dir = normalize(ObjSpaceViewDir(v.vertex));
 
 				//float3 worldPos = mul(unity_ObjectToWorld, float4(v.vertex.xyz, 1.0)).xyz;
@@ -73,16 +80,17 @@ Shader "Unlit/TestUnlitShader"
 				// Red, Green, Blue
 				fixed4 ocean_color = fixed4(0, 0.486,0.905,0);
 				float ocean_surface = 20;
-				
-				if (depth >= 1.0f) {
-					// Affect very far away regions like skybox
-					// Here dir.z is actually 0
-					float3 dir = normalize( i.view_dir);
+				float3 dir = normalize(i.view_dir);
 
+				// Run only for skybox
+				if (depth==1) {
 					if (dir.y == 0) dir.y = 0.0001;
 
 					// Make the y component to be of size 1
 					dir = mul(dir, 1.0f/dir.y);
+
+					// Multiply the "unit" y axis by the distance to the surface.
+					// This will also extend the other components
 					dir = mul(dir, ocean_surface - _WorldSpaceCameraPos.y);
 
 					// pow for debug adjustments
@@ -95,8 +103,8 @@ Shader "Unlit/TestUnlitShader"
 					}
 					return debug_color;
 				}
-				float fogVar = saturate(1.0 - (fog_end - worldDepth) / (fog_end - fog_start));
 
+				float fogVar = saturate(1.0 - (fog_end - worldDepth) / (fog_end - fog_start));
 				return lerp(col, ocean_color, fogVar);
 			}
 			ENDCG
