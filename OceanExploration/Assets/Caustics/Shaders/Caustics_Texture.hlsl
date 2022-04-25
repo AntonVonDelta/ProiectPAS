@@ -1,7 +1,7 @@
 // Rotate node
 float2 Unity_Rotate_Degrees_float(float2 UV, float2 Center, float Rotation)
 {
-    Rotation = Rotation * (3.1415926f/180.0f);
+    Rotation = Rotation * (3.1415926f/180.0f); // Get the rotation in degrees
     UV -= Center;
     float s = sin(Rotation);
     float c = cos(Rotation);
@@ -15,9 +15,9 @@ float2 Unity_Rotate_Degrees_float(float2 UV, float2 Center, float Rotation)
 }
 
 // Triplanar node
-void TextureProjection_float
+void CausticsTexture_float
 (
-    in Texture2D Tex,
+    in Texture2D Texture,
     in SamplerState SS,
     in float3 Position,
     in float3 Normal,
@@ -34,9 +34,9 @@ void TextureProjection_float
     float3 Node_Blend = pow(abs(Normal), Blend);
     Node_Blend /= dot(Node_Blend, 1.0);
 
-    float4 Node_X = SAMPLE_TEXTURE2D(Tex, SS, Unity_Rotate_Degrees_float(Node_UV.yz, 0, Rotation) + Speed_UV);
-    float4 Node_Y = SAMPLE_TEXTURE2D(Tex, SS, Unity_Rotate_Degrees_float(Node_UV.xz, 0, Rotation) + Speed_UV);
-    float4 Node_Z = SAMPLE_TEXTURE2D(Tex, SS, Unity_Rotate_Degrees_float(Node_UV.xy, 0, Rotation) + Speed_UV);
+    float4 Node_X = SAMPLE_TEXTURE2D(Texture, SS, Unity_Rotate_Degrees_float(Node_UV.yz, 0, Rotation) + Speed_UV);
+    float4 Node_Y = SAMPLE_TEXTURE2D(Texture, SS, Unity_Rotate_Degrees_float(Node_UV.xz, 0, Rotation) + Speed_UV);
+    float4 Node_Z = SAMPLE_TEXTURE2D(Texture, SS, Unity_Rotate_Degrees_float(Node_UV.xy, 0, Rotation) + Speed_UV);
 
     Out = Node_X * Node_Blend.x + Node_Y * Node_Blend.y + Node_Z * Node_Blend.z;
 }
