@@ -9,6 +9,6 @@ public class SoundScript : MonoBehaviour
 
     public void SetVolume (float volume)
     {
-        audioMixer.SetFloat("volume", volume); 
+        audioMixer.SetFloat("volume", -Mathf.Pow( 10,1.9f-volume)+1); 
     }
 }
