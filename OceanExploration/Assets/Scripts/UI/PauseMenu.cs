@@ -56,12 +56,4 @@ public class PauseMenu : MonoBehaviour
         Debug.Log("Quiting game...");
         Application.Quit();
     }
-
-
-    public AudioMixer audioMixer;
-
-    public void SetVolume (float volume)
-    {
-        audioMixer.SetFloat("volume", volume); 
-    }
 }

@@ -70,6 +70,10 @@ public class PlayerController : MonoBehaviour {
         // Aply a forward force but until velocity is reached
         ApplyForceToReachVelocity(rb, Input.GetAxis("Vertical") * transform.forward * moveForceMagnitude);
 
+        if (Input.GetKey(KeyCode.Space)) {
+            rb.AddForce(transform.forward * moveForceMagnitude);
+        }
+
         // Rotate from keyboard
         transform.Rotate(Vector3.up, Input.GetAxis("Horizontal") * rotateAmount, Space.World);
     }
@@ -93,7 +97,7 @@ public class PlayerController : MonoBehaviour {
     /// <summary>
     /// Counter clockwise test
     /// </summary>
-    bool isAngleBetween(float angle, float min, float max) {
+    bool IsAngleBetween(float angle, float min, float max) {
         if (min < max) {
             if (min < angle && angle < max) return true;
         } else {

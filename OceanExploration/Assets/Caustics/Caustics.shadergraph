@@ -1902,20 +1902,20 @@
     "m_Group": {
         "m_Id": ""
     },
-    "m_Name": "TextureProjection (Custom Function)",
+    "m_Name": "CausticsTexture (Custom Function)",
     "m_DrawState": {
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -368.79998779296877,
-            "y": 67.20002746582031,
-            "width": 257.5999755859375,
+            "x": -368.8000183105469,
+            "y": 51.20000076293945,
+            "width": 249.59999084472657,
             "height": 261.5999755859375
         }
     },
     "m_Slots": [
         {
-            "m_Id": "a998f2d898ca436eb5fc220ed2256513"
+            "m_Id": "f2f22db27d2b41a880093bef35a320c6"
         },
         {
             "m_Id": "5fd96a32ccf343d389e7beda7bfda224"
@@ -1950,7 +1950,7 @@
         "m_SerializableColors": []
     },
     "m_SourceType": 0,
-    "m_FunctionName": "TextureProjection",
+    "m_FunctionName": "CausticsTexture",
     "m_FunctionSource": "85e756755ec85fb4985e8f6acf491227",
     "m_FunctionBody": "Enter function body here..."
 }
@@ -4007,24 +4007,6 @@
 
 {
     "m_SGVersion": 0,
-    "m_Type": "UnityEditor.ShaderGraph.Texture2DInputMaterialSlot",
-    "m_ObjectId": "a998f2d898ca436eb5fc220ed2256513",
-    "m_Id": 0,
-    "m_DisplayName": "Tex",
-    "m_SlotType": 0,
-    "m_Hidden": false,
-    "m_ShaderOutputName": "Tex",
-    "m_StageCapability": 3,
-    "m_BareResource": true,
-    "m_Texture": {
-        "m_SerializedTexture": "{\"texture\":{\"instanceID\":0}}",
-        "m_Guid": ""
-    },
-    "m_DefaultType": 0
-}
-
-{
-    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.TimeNode",
     "m_ObjectId": "a99c1ac36c5b49afb467d3199fd27367",
     "m_Group": {
@@ -5242,6 +5224,24 @@
         "e32": 0.0,
         "e33": 1.0
     }
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Texture2DInputMaterialSlot",
+    "m_ObjectId": "f2f22db27d2b41a880093bef35a320c6",
+    "m_Id": 0,
+    "m_DisplayName": "Texture",
+    "m_SlotType": 0,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "Texture",
+    "m_StageCapability": 3,
+    "m_BareResource": true,
+    "m_Texture": {
+        "m_SerializedTexture": "{\"texture\":{\"instanceID\":0}}",
+        "m_Guid": ""
+    },
+    "m_DefaultType": 0
 }
 
 {
