@@ -7,7 +7,7 @@ Shader "Unlit/OceanUnlitShader"
 		SubShader
 	{
 		Tags { "RenderType" = "Opaque" }
-		LOD 100
+		Cull Off ZWrite Off ZTest Always
 
 		Pass
 		{
@@ -35,7 +35,7 @@ Shader "Unlit/OceanUnlitShader"
 
 
 			// https://gist.github.com/bgolus/a07ed65602c009d5e2f753826e8078a0
-			float getRawDepth(float2 uv) { return SAMPLE_DEPTH_TEXTURE_LOD(_CameraDepthTexture, float4(uv, 0.0, 0.0)); }
+			float getRawDepth(float2 uv) { return SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, uv); }
 
 			// inspired by keijiro's depth inverse projection
 			// https://github.com/keijiro/DepthInverseProjection
@@ -63,14 +63,18 @@ Shader "Unlit/OceanUnlitShader"
 				fixed4 col = tex2D(_MainTex, i.uv);
 
 				// Get view direction and position
-				float3 viewPos = viewSpacePosAtScreenUV(i.uv);
-				float3 worldPos = mul(unity_CameraToWorld, float4(viewPos.xy, -viewPos.z, 1.0)).xyz;
-
+				// This is the pixel direction in the view space meaning the magnitude of the
+				// vector does not extend over 1 (meaning the far plane)
+				// All values are withing the camera frustum
+				float3 viewPixelPos = viewSpacePosAtScreenUV(i.uv);
+				// This is the pixel direction but in world space. This is invariant to camera position or rotation
+				float3 worldPixelPos = mul(unity_CameraToWorld, float4(viewPixelPos.xy, -viewPixelPos.z, 1.0)).xyz;
+				// This is the pixel direction relative to camera
+				float3 localCameraPixelPos = worldPixelPos - _WorldSpaceCameraPos;
 
 				// God response: https://answers.unity.com/questions/877170/render-scene-depth-to-a-texture.html
-				float depth = UNITY_SAMPLE_DEPTH(tex2D(_CameraDepthTexture, i.uv));
+				float depth = pow( Linear01Depth(UNITY_SAMPLE_DEPTH(tex2D(_CameraDepthTexture, i.uv))), 1.0f);
 				float worldDepth = LinearEyeDepth(depth);	// Real z value away from camera
-				depth = pow(Linear01Depth(depth), 1.0f);
 
 				// Constants
 				float fog_start = 0;
@@ -79,14 +83,16 @@ Shader "Unlit/OceanUnlitShader"
 				// Red, Green, Blue
 				fixed4 ocean_color = fixed4(0, 0.486,0.905,0);
 				float ocean_surface = 20;
-				float3 dir = normalize(worldPos);
+				float3 dir = normalize(localCameraPixelPos);
 
 				if (_WorldSpaceCameraPos.y >= ocean_surface) {
 					return fixed4(0,0,0,0);
 				}
 
-				// Run only for skybox
-				//if (depth>0.0f) {
+				// Run only for skybox and for upward vectors
+				// Should not be run for downward vectors because we get a "band" at the horizon...also the 
+				// surface is up not down
+				if (depth==1.0f && dir.y>0) {
 					if (dir.y == 0) dir.y = 0.0001;
 
 					// Make the y component to be of size 1
@@ -98,14 +104,7 @@ Shader "Unlit/OceanUnlitShader"
 
 					// pow for debug adjustments
 					worldDepth = pow(length(dir),1);
-
-					// For debugging
-					fixed4 debug_color = fixed4(1,0,0,0);
-					if (worldDepth < 5) {
-						return debug_color * (worldDepth/5);
-					}
-					return debug_color;
-				//}
+				}
 
 				float fogVar = saturate(1.0 - (fog_end - worldDepth) / (fog_end - fog_start));
 				return lerp(col, ocean_color, fogVar);
