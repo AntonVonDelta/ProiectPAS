@@ -3,6 +3,10 @@ Shader "Unlit/OceanUnlitShader"
 	Properties
 	{
 		_MainTex("Texture", 2D) = "white" {}
+		_NoiseScale("Noise scale", float)=1
+		_NoiseFrequency ("Noise frequency", float) = 1
+		_NoiseSpeed("Noise Speed", float)=1
+		_PixelOffset("Pixel Offset", float)=0.005
 	}
 		SubShader
 	{
@@ -16,6 +20,8 @@ Shader "Unlit/OceanUnlitShader"
 			#pragma fragment frag
 
 			#include "UnityCG.cginc"
+			#include "noiseSimplex.cginc"
+			#define M_PI 3.14159265359f
 
 			struct appdata {
 				float4 vertex : POSITION;
@@ -26,6 +32,8 @@ Shader "Unlit/OceanUnlitShader"
 				float4 pos : SV_POSITION;
 				float2 uv : TEXCOORD0;
 			};
+
+			uniform float _NoiseScale, _NoiseFrequency, _NoiseSpeed, _PixelOffset;
 
 			// From the docs I can see this will be automatically populated with the depth texture
 			// BUT remeber to tell it to do so...in UniversalRenderPipelineAsset check the Depth Texture in General
@@ -73,17 +81,19 @@ Shader "Unlit/OceanUnlitShader"
 				float3 localCameraPixelPos = worldPixelPos - _WorldSpaceCameraPos;
 
 				// God response: https://answers.unity.com/questions/877170/render-scene-depth-to-a-texture.html
-				float depth = pow( Linear01Depth(UNITY_SAMPLE_DEPTH(tex2D(_CameraDepthTexture, i.uv))), 1.0f);
+				float depth = UNITY_SAMPLE_DEPTH(tex2D(_CameraDepthTexture, i.uv));
 				float worldDepth = LinearEyeDepth(depth);	// Real z value away from camera
+				depth= pow(Linear01Depth(depth), 1.0f);
+				float3 dir = normalize(localCameraPixelPos);
 
 				// Constants
-				float fog_start = 0;
-				float fog_end = 10;
+				float fog_start = 10;
+				float fog_end = 20;
+				float minimum_surface_fog = 0.0f;	// can't get a clear picture of the sky underwater
 
 				// Red, Green, Blue
 				fixed4 ocean_color = fixed4(0, 0.486,0.905,0);
 				float ocean_surface = 20;
-				float3 dir = normalize(localCameraPixelPos);
 
 				if (_WorldSpaceCameraPos.y >= ocean_surface) {
 					return fixed4(0,0,0,0);
@@ -93,17 +103,31 @@ Shader "Unlit/OceanUnlitShader"
 				// Should not be run for downward vectors because we get a "band" at the horizon...also the 
 				// surface is up not down
 				if (depth==1.0f && dir.y>0) {
+					float3 worldDir = normalize(worldPixelPos);
+
 					if (dir.y == 0) dir.y = 0.0001;
+					if (worldDir.y == 0) worldDir.y = 0.0001;
 
 					// Make the y component to be of size 1
 					dir = mul(dir, 1.0f/dir.y);
+					worldDir = mul(worldDir, 1.0f / worldDir.y);
 
 					// Multiply the "unit" y axis by the distance to the surface.
 					// This will also extend the other components
 					dir = mul(dir, ocean_surface - _WorldSpaceCameraPos.y);
+					worldDir = mul(worldDir, ocean_surface);
 
 					// pow for debug adjustments
 					worldDepth = pow(length(dir),1);
+
+					// https://www.youtube.com/watch?v=yXu55U_rRLw
+					// Wave animation
+					float2 oceanPos = worldDir.xz;
+					float3 spos = float3(i.uv.x, i.uv.y, 0) * _NoiseFrequency;
+					spos.z += _Time.x * _NoiseSpeed;
+					float noise = _NoiseScale * ((snoise(spos)+1)/2);
+					float4 noiseDirection = float4(cos(noise*M_PI*2),sin(noise*M_PI*2),0,0);
+					fixed4 col = tex2D(_MainTex, i.uv + normalize(noiseDirection)*_PixelOffset );
 				}
 
 				float fogVar = saturate(1.0 - (fog_end - worldDepth) / (fog_end - fog_start));
