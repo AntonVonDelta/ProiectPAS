@@ -1,4 +1,4 @@
-# ProiectPAS
+# OceanExploration
  - Jocul construit de echipa noastra simuleaza o lume subacvatica asa cum e vazuta dintr-un submarin.
  - Editorul folosit este Unity cu resurse, pachete si texturi descarcate de pe store.
  - Controlul se face din tastele WASD si din mouse pentru camera.
