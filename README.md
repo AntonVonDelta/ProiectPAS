@@ -3,6 +3,17 @@
  - Editorul folosit este Unity cu resurse, pachete si texturi descarcate de pe store.
  - Controlul se face din tastele WASD si din mouse pentru camera.
 
+# Echipa
+ - Reznicencu Sergiu (AntonVonDelta)
+ - Vlascenco Daniel-Marian
+ - Rotaru Catalin
+ - Negru Bogdan
+ - Teo Caragea
+ - Elena Matei
+ - Barbu David
+ - Gurzu Antonio
+ - Andronie Iustinian
+
  # Features
   - Algoritm de Marching Cubes
     - pentru generarea randomizata a terenului
