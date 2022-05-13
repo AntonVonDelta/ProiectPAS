@@ -117,23 +117,31 @@ Shader "Unlit/OceanUnlitShader"
 					dir = mul(dir, ocean_surface - _WorldSpaceCameraPos.y);
 					worldDir = mul(worldDir, ocean_surface);
 
+					// Pixel position on ocean surface
+					float2 oceanPos = worldDir.xz;
+
 					// pow for debug adjustments
 					worldDepth = pow(length(dir),1);
 
-					// https://www.youtube.com/watch?v=yXu55U_rRLw
-					// Wave animation
-					float2 oceanPos = worldDir.xz;
-					float3 spos = float3(i.uv.x, i.uv.y, 0) * _NoiseFrequency;
-					spos.z += _Time.x * _NoiseSpeed;
-					float noise = _NoiseScale * ((snoise(spos)+1)/2);
-					float4 noiseDirection = float4(cos(noise*M_PI*2),sin(noise*M_PI*2),0,0);
-					fixed4 col = tex2D(_MainTex, i.uv + normalize(noiseDirection)*_PixelOffset );
-
+					
 					return col;
 				}
 
-				float fogVar = saturate(1.0 - (fog_end - worldDepth) / (fog_end - fog_start));
-				return lerp(col, ocean_color, fogVar);
+				// https://www.youtube.com/watch?v=yXu55U_rRLw
+				// Wave animation
+				float3 spos = float3(i.uv.x, i.uv.y, 0) * _NoiseFrequency;
+				spos.z += _Time.x * _NoiseSpeed;
+				float noise = _NoiseScale * ((snoise(spos) + 1) / 2);
+				float4 noiseDirection = float4(cos(noise * M_PI * 2), sin(noise * M_PI * 2), 0, 0);
+				float2 pixelUVCoords = i.uv + normalize(noiseDirection) * _PixelOffset;
+				fixed4 noise_color = tex2D(_MainTex, pixelUVCoords);
+				worldDepth = LinearEyeDepth(UNITY_SAMPLE_DEPTH(tex2D(_CameraDepthTexture, pixelUVCoords)));
+
+				// Superimpose fog
+				float fog_var = saturate(1.0 - (fog_end - worldDepth) / (fog_end - fog_start));
+				fixed4 fog_color = lerp(noise_color, ocean_color, fog_var);
+
+				return fog_color;
 			}
 			ENDCG
 		}
