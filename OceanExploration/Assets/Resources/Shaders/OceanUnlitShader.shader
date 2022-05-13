@@ -137,7 +137,9 @@ Shader "Unlit/OceanUnlitShader"
 					// Apply refraction in order to reduce light further from camera with larger angles from the normal
 					float n = 1.332f;		// nWater/nAir refraction indexes
 					// Calculate cos(Beta) where nAir*sin(beta)=nWater*sin(alpha=angle_from_normal)
-					float transmitance = sqrt(1 - pow(n, 2) * pow(sin(angle_from_normal), 2));
+					float cos_beta = 1 - pow(n, 2) * pow(sin(angle_from_normal), 2);
+					float transmitance = 0;
+					if (cos_beta >= 0) transmitance = sqrt(1 - pow(n, 2) * pow(sin(angle_from_normal), 2));
 
 					return lerp(_OceanShallowColor, col, transmitance);
 				}
