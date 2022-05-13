@@ -97,7 +97,7 @@ Shader "Unlit/OceanUnlitShader"
 
 				// Constants
 				float fog_start = 10;
-				float fog_end = 20;
+				float fog_end = 30;
 				float minimum_surface_fog = 0.0f;	// can't get a clear picture of the sky underwater
 
 				// We are above water
@@ -107,7 +107,7 @@ Shader "Unlit/OceanUnlitShader"
 						dir = mul(dir, _WorldSpaceCameraPos.y - _OceanSurface);
 
 						float underwater_depth = worldDepth - length(dir);
-
+						if (underwater_depth < 0) return fixed4(1,0,0,0);
 						// Superimpose fog
 						fog_start = 0;
 						fog_end = 5;
@@ -152,9 +152,9 @@ Shader "Unlit/OceanUnlitShader"
 					// Apply refraction in order to reduce light further from camera with larger angles from the normal
 					float n = 1.332f;		// nWater/nAir refraction indexes
 					// Calculate cos(Beta) where nAir*sin(beta)=nWater*sin(alpha=angle_from_normal)
-					float cos_beta = 1 - pow(n, 2) * pow(sin(angle_from_normal), 2);
+					float cos_beta_squared = 1 - pow(n, 2) * pow(sin(angle_from_normal), 2);
 					float transmitance = 0;
-					if (cos_beta >= 0) transmitance = sqrt(1 - pow(n, 2) * pow(sin(angle_from_normal), 2));
+					if (cos_beta_squared >= 0) transmitance = sqrt(cos_beta_squared);
 
 					// Surface texture sampling
 
