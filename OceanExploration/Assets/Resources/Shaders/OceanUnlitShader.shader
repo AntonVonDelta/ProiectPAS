@@ -3,6 +3,12 @@ Shader "Unlit/OceanUnlitShader"
 	Properties
 	{
 		_MainTex("Texture", 2D) = "white" {}
+		_OceanTex("Ocean Texture", 2D) = "white" {}
+		_OceanSurface("Ocean Surface", float) = 20
+		_OceanDeepColor("Ocean deep color", Color) = (0, 0.486,0.905,0)
+		_OceanShallowColor("Ocean deep color", Color) = (0, 0.686,0.905,0)
+
+
 		_NoiseScale("Noise scale", float)=1
 		_NoiseFrequency ("Noise frequency", float) = 1
 		_NoiseSpeed("Noise Speed", float)=1
@@ -33,7 +39,10 @@ Shader "Unlit/OceanUnlitShader"
 				float2 uv : TEXCOORD0;
 			};
 
-			uniform float _NoiseScale, _NoiseFrequency, _NoiseSpeed, _PixelOffset;
+			sampler2D _OceanTex;
+			float _OceanSurface;
+			fixed4 _OceanDeepColor, _OceanShallowColor;
+			float _NoiseScale, _NoiseFrequency, _NoiseSpeed, _PixelOffset;
 
 			// From the docs I can see this will be automatically populated with the depth texture
 			// BUT remeber to tell it to do so...in UniversalRenderPipelineAsset check the Depth Texture in General
@@ -83,7 +92,7 @@ Shader "Unlit/OceanUnlitShader"
 				// God response: https://answers.unity.com/questions/877170/render-scene-depth-to-a-texture.html
 				float depth = UNITY_SAMPLE_DEPTH(tex2D(_CameraDepthTexture, i.uv));
 				float worldDepth = LinearEyeDepth(depth);	// Real z value away from camera
-				depth= pow(Linear01Depth(depth), 1.0f);
+				depth = pow(Linear01Depth(depth), 1.0f);
 				float3 dir = normalize(localCameraPixelPos);
 
 				// Constants
@@ -91,11 +100,8 @@ Shader "Unlit/OceanUnlitShader"
 				float fog_end = 20;
 				float minimum_surface_fog = 0.0f;	// can't get a clear picture of the sky underwater
 
-				// Red, Green, Blue
-				fixed4 ocean_color = fixed4(0, 0.486,0.905,0);
-				float ocean_surface = 20;
 
-				if (_WorldSpaceCameraPos.y >= ocean_surface) {
+				if (_WorldSpaceCameraPos.y >= _OceanSurface) {
 					return fixed4(0,0,0,0);
 				}
 
@@ -114,8 +120,8 @@ Shader "Unlit/OceanUnlitShader"
 
 					// Multiply the "unit" y axis by the distance to the surface.
 					// This will also extend the other components
-					dir = mul(dir, ocean_surface - _WorldSpaceCameraPos.y);
-					worldDir = mul(worldDir, ocean_surface);
+					dir = mul(dir, _OceanSurface - _WorldSpaceCameraPos.y);
+					worldDir = mul(worldDir, _OceanSurface);
 
 					// Pixel position on ocean surface
 					float2 oceanPos = worldDir.xz;
@@ -123,23 +129,22 @@ Shader "Unlit/OceanUnlitShader"
 					// pow for debug adjustments
 					worldDepth = pow(length(dir),1);
 
+					// Get angle of horizontal plane pixel vector in order to get
+					// angle with the surface normal
+					float horizontal_angle = atan2(dir.y, sqrt(pow(dir.x,2) + pow(dir.z, 2)));
+					float angle_from_normal = M_PI/2 - horizontal_angle;
 					
-					return col;
-				}
+					// Apply refraction in order to reduce light further from camera with larger angles from the normal
+					float n = 1.332f;		// nWater/nAir refraction indexes
+					// Calculate cos(Beta) where nAir*sin(beta)=nWater*sin(alpha=angle_from_normal)
+					float transmitance = sqrt(1 - pow(n, 2) * pow(sin(angle_from_normal), 2));
 
-				// https://www.youtube.com/watch?v=yXu55U_rRLw
-				// Wave animation
-				float3 spos = float3(i.uv.x, i.uv.y, 0) * _NoiseFrequency;
-				spos.z += _Time.x * _NoiseSpeed;
-				float noise = _NoiseScale * ((snoise(spos) + 1) / 2);
-				float4 noiseDirection = float4(cos(noise * M_PI * 2), sin(noise * M_PI * 2), 0, 0);
-				float2 pixelUVCoords = i.uv + normalize(noiseDirection) * _PixelOffset;
-				fixed4 noise_color = tex2D(_MainTex, pixelUVCoords);
-				worldDepth = LinearEyeDepth(UNITY_SAMPLE_DEPTH(tex2D(_CameraDepthTexture, pixelUVCoords)));
+					return lerp(_OceanShallowColor, col, transmitance);
+				}
 
 				// Superimpose fog
 				float fog_var = saturate(1.0 - (fog_end - worldDepth) / (fog_end - fog_start));
-				fixed4 fog_color = lerp(noise_color, ocean_color, fog_var);
+				fixed4 fog_color = lerp(col, _OceanDeepColor, fog_var);
 
 				return fog_color;
 			}
