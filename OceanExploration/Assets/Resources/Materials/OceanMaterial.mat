@@ -91,8 +91,12 @@ Material:
     - _Glossiness: 0
     - _GlossyReflections: 0
     - _Metallic: 0
+    - _NoiseFrequency: 1.14
+    - _NoiseScale: 0.66
+    - _NoiseSpeed: 9.8
     - _OcclusionStrength: 1
     - _Parallax: 0.005
+    - _PixelOffset: 0.01
     - _QueueOffset: 0
     - _ReceiveShadows: 1
     - _Smoothness: 0.5

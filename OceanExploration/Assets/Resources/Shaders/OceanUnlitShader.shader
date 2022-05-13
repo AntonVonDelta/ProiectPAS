@@ -128,6 +128,8 @@ Shader "Unlit/OceanUnlitShader"
 					float noise = _NoiseScale * ((snoise(spos)+1)/2);
 					float4 noiseDirection = float4(cos(noise*M_PI*2),sin(noise*M_PI*2),0,0);
 					fixed4 col = tex2D(_MainTex, i.uv + normalize(noiseDirection)*_PixelOffset );
+
+					return col;
 				}
 
 				float fogVar = saturate(1.0 - (fog_end - worldDepth) / (fog_end - fog_start));
