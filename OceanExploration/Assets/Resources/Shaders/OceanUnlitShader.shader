@@ -90,9 +90,9 @@ Shader "Unlit/OceanUnlitShader"
 				float3 localCameraPixelPos = worldPixelPos - _WorldSpaceCameraPos;
 
 				// God response: https://answers.unity.com/questions/877170/render-scene-depth-to-a-texture.html
-				float depth = UNITY_SAMPLE_DEPTH(tex2D(_CameraDepthTexture, i.uv));
-				float worldDepth = LinearEyeDepth(depth);	// Real z value away from camera
-				depth = pow(Linear01Depth(depth), 1.0f);
+				float logarithmic_depth= UNITY_SAMPLE_DEPTH(tex2D(_CameraDepthTexture, i.uv));
+				float depth = Linear01Depth(logarithmic_depth);
+				float worldDepth = LinearEyeDepth(logarithmic_depth);	// Real z value away from camera
 				float3 dir = normalize(localCameraPixelPos);
 
 				// Constants
@@ -100,9 +100,24 @@ Shader "Unlit/OceanUnlitShader"
 				float fog_end = 20;
 				float minimum_surface_fog = 0.0f;	// can't get a clear picture of the sky underwater
 
-
+				// We are above water
 				if (_WorldSpaceCameraPos.y >= _OceanSurface) {
-					return fixed4(0,0,0,0);
+					if (dir.y < 0) {
+						dir = mul(dir, 1.0f / dir.y);
+						dir = mul(dir, _WorldSpaceCameraPos.y - _OceanSurface);
+
+						float underwater_depth = worldDepth - length(dir);
+
+						// Superimpose fog
+						fog_start = 0;
+						fog_end = 5;
+						float fog_var = saturate(1.0 - (fog_end - underwater_depth) / (fog_end - fog_start));
+						fixed4 fog_color = lerp(_OceanShallowColor, _OceanDeepColor, fog_var);
+
+						return fog_color;
+					}
+
+					return col;
 				}
 
 				// Run only for skybox and for upward vectors
@@ -141,7 +156,16 @@ Shader "Unlit/OceanUnlitShader"
 					float transmitance = 0;
 					if (cos_beta >= 0) transmitance = sqrt(1 - pow(n, 2) * pow(sin(angle_from_normal), 2));
 
-					return lerp(_OceanShallowColor, col, transmitance);
+					// Surface texture sampling
+
+
+					fixed4 transmitted_color= lerp(_OceanShallowColor, col, transmitance);
+
+					// Superimpose fog
+					float fog_var = saturate(1.0 - (fog_end - worldDepth) / (fog_end - fog_start));
+					fixed4 fog_color = lerp(transmitted_color, _OceanDeepColor, fog_var);
+
+					return fog_color;
 				}
 
 				// Superimpose fog
