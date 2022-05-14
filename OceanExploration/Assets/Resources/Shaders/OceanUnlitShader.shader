@@ -104,15 +104,10 @@ Shader "Unlit/OceanUnlitShader"
 					if (_WorldSpaceCameraPos.y >= _OceanSurface) {
 						if (dir.y < 0) {
 							dir = mul(dir, 1.0f / dir.y);
-							dir = mul(dir, _WorldSpaceCameraPos.y - _OceanSurface);
+							dir = mul(dir, _OceanSurface - worldPixelPos.y);
 
-							float3 unitViewPixelPos = viewPixelPos;
-							unitViewPixelPos = mul(unitViewPixelPos, 1.0f / unitViewPixelPos.z);
-							unitViewPixelPos = mul(unitViewPixelPos, _ProjectionParams.y);
-							float unitViewDistance = length(unitViewPixelPos);
-
-							float underwater_depth = worldDepth - length(dir);
-							if (abs(underwater_depth) < 0.1) return fixed4(1,0,0,0);
+							float underwater_depth = length(dir);
+							//if (unitViewDistance>0.15f) return fixed4(1,0,0,0);
 
 							// This checks if the object sampled is outside the water/above surface
 							if (underwater_depth < 0) return col;
