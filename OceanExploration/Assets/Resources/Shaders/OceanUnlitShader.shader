@@ -107,7 +107,6 @@ Shader "Unlit/OceanUnlitShader"
 							dir = mul(dir, _OceanSurface - worldPixelPos.y);
 
 							float underwater_depth = length(dir);
-							//if (unitViewDistance>0.15f) return fixed4(1,0,0,0);
 
 							// This checks if the object sampled is outside the water/above surface
 							if (underwater_depth < 0) return col;
@@ -123,65 +122,62 @@ Shader "Unlit/OceanUnlitShader"
 
 						return col;
 					}
-					return col;
+
+					// Run only for skybox and for upward vectors
+					// Should not be run for downward vectors because we get a "band" at the horizon...also the 
+					// surface is up not down
+					if (depth == 1.0f && dir.y > 0) {
+						float3 worldDir = normalize(worldPixelPos);
+
+						if (dir.y == 0) dir.y = 0.0001;
+						if (worldDir.y == 0) worldDir.y = 0.0001;
+
+						// Make the y component to be of size 1
+						dir = mul(dir, 1.0f / dir.y);
+						worldDir = mul(worldDir, 1.0f / worldDir.y);
+
+						// Multiply the "unit" y axis by the distance to the surface.
+						// This will also extend the other components
+						dir = mul(dir, _OceanSurface - _WorldSpaceCameraPos.y);
+						worldDir = mul(worldDir, _OceanSurface);
+
+						// Pixel position on ocean surface
+						float2 oceanPos = worldDir.xz;
+
+						// pow for debug adjustments
+						worldDepth = pow(length(dir),1);
+
+						// Get angle of horizontal plane pixel vector in order to get
+						// angle with the surface normal
+						float horizontal_angle = atan2(dir.y, sqrt(pow(dir.x,2) + pow(dir.z, 2)));
+						float angle_from_normal = M_PI / 2 - horizontal_angle;
+
+						// Apply refraction in order to reduce light further from camera with larger angles from the normal
+						float n = 1.332f;		// nWater/nAir refraction indexes
+						// Calculate cos(Beta) where nAir*sin(beta)=nWater*sin(alpha=angle_from_normal)
+						float cos_beta_squared = 1 - pow(n, 2) * pow(sin(angle_from_normal), 2);
+						float transmitance = 0;
+						if (cos_beta_squared >= 0) transmitance = sqrt(cos_beta_squared);
+
+						// Surface texture sampling
+
+
+						fixed4 transmitted_color = lerp(_OceanShallowColor, col, transmitance);
+
+						// Superimpose fog
+						float fog_var = saturate(1.0 - (fog_end - worldDepth) / (fog_end - fog_start));
+						fixed4 fog_color = lerp(transmitted_color, _OceanDeepColor, fog_var);
+
+						return fog_color;
+					}
+
+					// Superimpose fog
+					float fog_var = saturate(1.0 - (fog_end - worldDepth) / (fog_end - fog_start));
+					fixed4 fog_color = lerp(col, _OceanDeepColor, fog_var);
+
+					return fog_color;
 				}
-
-					//	// Run only for skybox and for upward vectors
-					//	// Should not be run for downward vectors because we get a "band" at the horizon...also the 
-					//	// surface is up not down
-					//	if (depth==1.0f && dir.y>0) {
-					//		float3 worldDir = normalize(worldPixelPos);
-
-					//		if (dir.y == 0) dir.y = 0.0001;
-					//		if (worldDir.y == 0) worldDir.y = 0.0001;
-
-					//		// Make the y component to be of size 1
-					//		dir = mul(dir, 1.0f/dir.y);
-					//		worldDir = mul(worldDir, 1.0f / worldDir.y);
-
-					//		// Multiply the "unit" y axis by the distance to the surface.
-					//		// This will also extend the other components
-					//		dir = mul(dir, _OceanSurface - _WorldSpaceCameraPos.y);
-					//		worldDir = mul(worldDir, _OceanSurface);
-
-					//		// Pixel position on ocean surface
-					//		float2 oceanPos = worldDir.xz;
-
-					//		// pow for debug adjustments
-					//		worldDepth = pow(length(dir),1);
-
-					//		// Get angle of horizontal plane pixel vector in order to get
-					//		// angle with the surface normal
-					//		float horizontal_angle = atan2(dir.y, sqrt(pow(dir.x,2) + pow(dir.z, 2)));
-					//		float angle_from_normal = M_PI/2 - horizontal_angle;
-					//		
-					//		// Apply refraction in order to reduce light further from camera with larger angles from the normal
-					//		float n = 1.332f;		// nWater/nAir refraction indexes
-					//		// Calculate cos(Beta) where nAir*sin(beta)=nWater*sin(alpha=angle_from_normal)
-					//		float cos_beta_squared = 1 - pow(n, 2) * pow(sin(angle_from_normal), 2);
-					//		float transmitance = 0;
-					//		if (cos_beta_squared >= 0) transmitance = sqrt(cos_beta_squared);
-
-					//		// Surface texture sampling
-
-
-					//		fixed4 transmitted_color= lerp(_OceanShallowColor, col, transmitance);
-
-					//		// Superimpose fog
-					//		float fog_var = saturate(1.0 - (fog_end - worldDepth) / (fog_end - fog_start));
-					//		fixed4 fog_color = lerp(transmitted_color, _OceanDeepColor, fog_var);
-
-					//		return fog_color;
-					//	}
-
-					//	// Superimpose fog
-					//	float fog_var = saturate(1.0 - (fog_end - worldDepth) / (fog_end - fog_start));
-					//	fixed4 fog_color = lerp(col, _OceanDeepColor, fog_var);
-
-					//	return fog_color;
-					//}
-					ENDCG
-				}
-
+			ENDCG
+			}
 		}
 }
