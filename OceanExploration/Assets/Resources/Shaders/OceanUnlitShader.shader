@@ -104,7 +104,6 @@ Shader "Unlit/OceanUnlitShader"
 					// Make sure dir.y is not 0
 					if (dir.y == 0) dir.y = 0.0001;
 
-
 					// We are above water
 					if (_WorldSpaceCameraPos.y >= _OceanSurface) {
 						if (dir.y < 0) {
