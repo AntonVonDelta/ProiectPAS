@@ -69,14 +69,21 @@ public class PlayerController : MonoBehaviour {
         }
 
         // Apply a forward force but until velocity is reached
+        // Disallow upward movement if outside of water
         Vector3 forwardDirection = transform.forward;
         if (transform.position.y >= oceanSurface) {
-            // Do not go above water
-            Vector3 worldForward = transform.TransformDirection(forwardDirection);
+            Vector3 worldForward = transform.TransformDirection(transform.forward);
             worldForward.y = 0;
             forwardDirection = transform.InverseTransformDirection(worldForward);
         }
         ApplyForceToReachVelocity(rb, Input.GetAxis("Vertical") * forwardDirection * moveForceMagnitude);
+
+        // Apply force to keep vehicle underwater
+        if (transform.position.y >= oceanSurface) {
+            // Do not go above water
+            Vector3 downDirection = transform.InverseTransformDirection(Vector3.down) * 1/2*moveForceMagnitude;
+            rb.AddForce(downDirection);
+        }
 
         if (Input.GetKey(KeyCode.Space)) {
             rb.AddForce(transform.forward * moveForceMagnitude);

@@ -128,17 +128,15 @@ Shader "Unlit/OceanUnlitShader"
 					// Run only for skybox and for upward vectors
 					// Should not be run for downward vectors because we get a "band" at the horizon...also the 
 					// surface is up not down
-					if (depth == 1.0f && dir.y > 0) {
+					if ((depth == 1.0f || worldPixelPos.y>= _OceanSurface) && dir.y > 0) {
 						float3 worldDir = normalize(worldPixelPos);
-
 						if (worldDir.y == 0) worldDir.y = 0.0001;
-
 						// Make the y component to be of size 1
 						worldDir = mul(worldDir, 1.0f / worldDir.y);
-
 						// Multiply the "unit" y axis by the distance to the surface.
 						// This will also extend the other components
 						worldDir = mul(worldDir, _OceanSurface);
+						
 
 						// Pixel position on ocean surface
 						float2 oceanPos = worldDir.xz;
@@ -156,8 +154,9 @@ Shader "Unlit/OceanUnlitShader"
 						float n = 1.332f;		// nWater/nAir refraction indexes
 						// Calculate cos(Beta) where nAir*sin(beta)=nWater*sin(alpha=angle_from_normal)
 						float cos_beta_squared = 1 - pow(n, 2) * pow(sin(angle_from_normal), 2);
-						float transmitance = 0;
-						if (cos_beta_squared >= 0) transmitance = sqrt(cos_beta_squared);
+						float transmitance = 0.01;
+						if (cos_beta_squared >= 0) transmitance += sqrt(cos_beta_squared);
+						transmitance = saturate(transmitance);
 
 						// Surface texture sampling
 
