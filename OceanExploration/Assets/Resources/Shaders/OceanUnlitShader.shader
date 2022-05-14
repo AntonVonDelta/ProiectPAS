@@ -81,7 +81,8 @@ Shader "Unlit/OceanUnlitShader"
 
 					// Get view direction and position
 					// This is the pixel direction in the view space meaning the magnitude of the
-					// vector does not extend over 1 (meaning the far plane)
+					// vector is between 0 and far plane. Not a proper space because there's no center
+					// but all rays on the near plane got a 0 Z value
 					// All values are withing the camera frustum
 					float3 viewPixelPos = viewSpacePosAtScreenUV(i.uv);
 					// This is the pixel direction but in world space. This is invariant to camera position
@@ -92,7 +93,7 @@ Shader "Unlit/OceanUnlitShader"
 					// God response: https://answers.unity.com/questions/877170/render-scene-depth-to-a-texture.html
 					float logarithmic_depth = UNITY_SAMPLE_DEPTH(tex2D(_CameraDepthTexture, i.uv));
 					float depth = Linear01Depth(logarithmic_depth);
-					float worldDepth = LinearEyeDepth(logarithmic_depth);	// Real z value away from camera
+					float worldDepth = -viewPixelPos.z;	// Almost real z value away from camera. Z=0 means near plane
 					float3 dir = normalize(localCameraPixelPos);
 
 					// Constants
@@ -100,13 +101,15 @@ Shader "Unlit/OceanUnlitShader"
 					float fog_end = 30;
 					float minimum_surface_fog = 0.0f;	// can't get a clear picture of the sky underwater
 
+					// Make sure dir.y is not 0
+					if (dir.y == 0) dir.y = 0.0001;
+
+
 					// We are above water
 					if (_WorldSpaceCameraPos.y >= _OceanSurface) {
 						if (dir.y < 0) {
-							dir = mul(dir, 1.0f / dir.y);
-							dir = mul(dir, _OceanSurface - worldPixelPos.y);
-
-							float underwater_depth = length(dir);
+							// The same as length( mul( mul(dir,1/dir.y),_OceanSurface - worldPixelPos.y))
+							float underwater_depth = (_OceanSurface - worldPixelPos.y) / (-dir.y);
 
 							// This checks if the object sampled is outside the water/above surface
 							if (underwater_depth < 0) return col;
@@ -129,23 +132,21 @@ Shader "Unlit/OceanUnlitShader"
 					if (depth == 1.0f && dir.y > 0) {
 						float3 worldDir = normalize(worldPixelPos);
 
-						if (dir.y == 0) dir.y = 0.0001;
 						if (worldDir.y == 0) worldDir.y = 0.0001;
 
 						// Make the y component to be of size 1
-						dir = mul(dir, 1.0f / dir.y);
 						worldDir = mul(worldDir, 1.0f / worldDir.y);
 
 						// Multiply the "unit" y axis by the distance to the surface.
 						// This will also extend the other components
-						dir = mul(dir, _OceanSurface - _WorldSpaceCameraPos.y);
 						worldDir = mul(worldDir, _OceanSurface);
 
 						// Pixel position on ocean surface
 						float2 oceanPos = worldDir.xz;
 
-						// pow for debug adjustments
-						worldDepth = pow(length(dir),1);
+						// Calculate distance to the surface
+						// The same as length( mul( mul(dir,1/dir.y),_OceanSurface - worldPixelPos.y))
+						float underwater_depth = (_OceanSurface - _WorldSpaceCameraPos.y) / (dir.y);
 
 						// Get angle of horizontal plane pixel vector in order to get
 						// angle with the surface normal
@@ -165,7 +166,7 @@ Shader "Unlit/OceanUnlitShader"
 						fixed4 transmitted_color = lerp(_OceanShallowColor, col, transmitance);
 
 						// Superimpose fog
-						float fog_var = saturate(1.0 - (fog_end - worldDepth) / (fog_end - fog_start));
+						float fog_var = saturate(1.0 - (fog_end - underwater_depth) / (fog_end - fog_start));
 						fixed4 fog_color = lerp(transmitted_color, _OceanDeepColor, fog_var);
 
 						return fog_color;
