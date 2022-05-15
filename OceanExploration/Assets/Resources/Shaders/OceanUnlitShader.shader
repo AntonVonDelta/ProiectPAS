@@ -181,12 +181,13 @@ Shader "Unlit/OceanUnlitShader"
 						float noise = _NoiseScale * ((snoise(spos) + 1) / 2);
 						float2 noiseDirection = float2(cos(noise * M_PI * 2), sin(noise * M_PI * 2));
 						float2 pixelUVCoords = oceanTexUV + normalize(noiseDirection) * _PixelOffset;
+
 						fixed4 wave_col = tex2D(_OceanTex, pixelUVCoords);
 
 						fixed4 ocean_color = col;
 						if (wave_col.r > 0.2) ocean_color = _OceanShallowColor;
 						if (wave_col.r > 0.4) ocean_color = fixed4(1, 1, 1, 0);
-						
+
 						// Calculate color based on transmitance
 						fixed4 transmitted_color = lerp(_OceanShallowColor, ocean_color, transmitance);
 
