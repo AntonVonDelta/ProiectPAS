@@ -73,6 +73,21 @@ Shader "Unlit/OceanUnlitShader"
 					return viewSpaceRay * Linear01Depth(rawDepth);
 				}
 
+				float2 noiseAtUV(float2 uv, float frequency, float speed) {
+					float3 spos = float3(uv.x, uv.y, 0) * frequency;
+					spos.z += _Time.x * speed;
+					float noise = _NoiseScale * ((snoise(spos) + 1) / 2);
+					float2 noiseDirection = float2(cos(noise * M_PI * 2), sin(noise * M_PI * 2));
+					return normalize(noiseDirection);
+				}
+
+
+				float2 texture1DMovement(float2 uv, float speed, float scale) {
+					float2 time_offset = _Time.x * speed;
+					return uv*scale + time_offset;
+				}
+
+
 
 				v2f vert(appdata v) {
 					v2f o;
@@ -172,13 +187,18 @@ Shader "Unlit/OceanUnlitShader"
 						float time_noise = _WaveNoiseScale * ((snoise(time_spos * _WaveNoiseFrequency) + 1) / 2);
 						float2 time_noiseDirection = normalize(float2(cos(time_noise * M_PI * 2), sin(time_noise * M_PI * 2)));
 
-						float2 oceanTexUV = (time_noiseDirection * _Time.x * _OceanWaveSpeed + oceanPos * _OceanUVScale)/10*underwater_depth;
-						// https://www.youtube.com/watch?v=yXu55U_rRLw
-						float3 spos = float3(oceanTexUV.x, oceanTexUV.y, 0) * _NoiseFrequency;
-						spos.z += _Time.x * _NoiseSpeed;
-						float noise = _NoiseScale * ((snoise(spos) + 1) / 2);
-						float2 noiseDirection = float2(cos(noise * M_PI * 2), sin(noise * M_PI * 2));
-						float2 pixelUVCoords = oceanTexUV + normalize(noiseDirection) * _PixelOffset;
+
+						float2 oceanTexUV = texture1DMovement(oceanPos, _OceanWaveSpeed, _OceanUVScale);
+						float2 noiseDirection = noiseAtUV(oceanTexUV, _NoiseFrequency, _NoiseSpeed);
+						float2 pixelUVCoords = oceanTexUV + noiseDirection * _PixelOffset;
+
+						//float2 oceanTexUV = time_noiseDirection * _Time.x * _OceanWaveSpeed + (oceanPos * _OceanUVScale)/10*underwater_depth;
+						//// https://www.youtube.com/watch?v=yXu55U_rRLw
+						//float3 spos = float3(oceanTexUV.x, oceanTexUV.y, 0) * _NoiseFrequency;
+						//spos.z += _Time.x * _NoiseSpeed;
+						//float noise = _NoiseScale * ((snoise(spos) + 1) / 2);
+						//float2 noiseDirection = float2(cos(noise * M_PI * 2), sin(noise * M_PI * 2));
+						//float2 pixelUVCoords = oceanTexUV + normalize(noiseDirection) * _PixelOffset;
 
 						fixed4 wave_col = tex2D(_OceanTex, pixelUVCoords);
 
