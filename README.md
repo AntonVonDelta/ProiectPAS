@@ -24,12 +24,17 @@
     - include algoritm de coliziune cu obiectele din jur (precum submarinul)
     - constrangeri pentru a crea un aspect cat mai fidel al unei plante
     - simulare fortei lui Arhimede
+  - Underwater and overwater shader
+    - simularea refractiei prin legea lui Snell
+    - spuma
+    - valuri realiste
+    - animatii randomizate in timp cu perlin noise
   - Chunk Generator
     - genereaza chunkuri dupa datele returnate de Marching Cubes
     - caching
     - algoritm de amplasare randomizata a plantelor   
   - Caustics
-    - pentru simularea valurilor pe fundul oceanului 
+    - pentru simularea valurilor pe fundul oceanului
   - Sistem de particule
 
 
