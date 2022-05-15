@@ -266,6 +266,9 @@ public class VerletIntegration : MonoBehaviour {
 
 
     private void UpdateLineRenderers() {
+        if (branchPointsInterval == null) {
+            return;
+        }
         for (int i = 0; i < lineRenderersParents.Count; i++) {
             LineRenderer renderer = lineRenderersParents[i].GetComponent<LineRenderer>();
 

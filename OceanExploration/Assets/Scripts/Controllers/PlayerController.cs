@@ -7,10 +7,13 @@ public class PlayerController : MonoBehaviour {
     public Camera playerCamera;
     public GameObject motorParticleSystem;
     public float moveForceMagnitude = 5f;
+    public float moveForceAcceleratedMultiplier = 1.5f;
+
     public float rotateAmount = 2.5f;
     public float mouseMultiplier = 2f;
     public float smoothTime = 0.3f;
     public float lengthFromCenterToBack = 1;
+    public float oceanSurface = 20;
 
     private Rigidbody rb;
     private Vector3 localCameraPosition;
@@ -67,16 +70,31 @@ public class PlayerController : MonoBehaviour {
             transform.localRotation = Quaternion.Euler(localEulerAngles);
         }
 
-        // Aply a forward force but until velocity is reached
-        ApplyForceToReachVelocity(rb, Input.GetAxis("Vertical") * transform.forward * moveForceMagnitude);
-
+        // Apply a forward force but until velocity is reached
+        // Disallow upward movement if outside of water
+        Vector3 forwardDirection = transform.forward;
+        float moveMultiplier = 1;
+        if (transform.position.y >= oceanSurface) {
+            Vector3 worldForward = transform.TransformDirection(transform.forward);
+            worldForward.y = 0;
+            forwardDirection = transform.InverseTransformDirection(worldForward);
+        }
         if (Input.GetKey(KeyCode.Space)) {
-            rb.AddForce(transform.forward * moveForceMagnitude);
+            moveMultiplier = moveForceAcceleratedMultiplier;
+        }
+        ApplyForceToReachVelocity(rb, Input.GetAxis("Vertical") * forwardDirection * moveMultiplier * moveForceMagnitude);
+
+        // Apply force to keep vehicle underwater
+        if (transform.position.y >= oceanSurface) {
+            // Do not go above water
+            Vector3 downDirection = transform.InverseTransformDirection(Vector3.down) * Mathf.Lerp(1f / 2, 1, (transform.position.y - oceanSurface) / 4) * moveMultiplier * moveForceMagnitude;
+            rb.AddForce(downDirection);
         }
 
         // Rotate from keyboard
         transform.Rotate(Vector3.up, Input.GetAxis("Horizontal") * rotateAmount, Space.World);
     }
+
 
     private void OnDrawGizmos() {
         Gizmos.color = Color.red;
