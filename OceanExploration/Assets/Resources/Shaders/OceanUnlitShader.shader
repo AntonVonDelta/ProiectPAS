@@ -6,7 +6,7 @@ Shader "Unlit/OceanUnlitShader"
 		_OceanTex("Ocean Texture", 2D) = "white" {}
 		_OceanSurface("Ocean Surface", float) = 20
 		_OceanDeepColor("Ocean deep color", Color) = (0, 0.486,0.905,0)
-		_OceanShallowColor("Ocean deep color", Color) = (0, 0.686,0.905,0)
+		_OceanShallowColor("Ocean shallow color", Color) = (0, 0.686,0.905,0)
 
 
 		_NoiseScale("Noise scale", float) = 1
@@ -130,16 +130,17 @@ Shader "Unlit/OceanUnlitShader"
 					// surface is up not down
 					if ((depth == 1.0f || worldPixelPos.y>= _OceanSurface) && dir.y > 0) {
 						float3 worldDir = normalize(worldPixelPos);
+
 						if (worldDir.y == 0) worldDir.y = 0.0001;
 						// Make the y component to be of size 1
 						worldDir = mul(worldDir, 1.0f / worldDir.y);
 						// Multiply the "unit" y axis by the distance to the surface.
 						// This will also extend the other components
 						worldDir = mul(worldDir, _OceanSurface);
-						
 
 						// Pixel position on ocean surface
 						float2 oceanPos = worldDir.xz;
+
 
 						// Calculate distance to the surface
 						// The same as length( mul( mul(dir,1/dir.y),_OceanSurface - worldPixelPos.y))
@@ -151,7 +152,7 @@ Shader "Unlit/OceanUnlitShader"
 						float angle_from_normal = M_PI / 2 - horizontal_angle;
 
 						// Apply refraction in order to reduce light further from camera with larger angles from the normal
-						float n = 1.332f;		// nWater/nAir refraction indexes
+						float n = 1.2f;		// nWater/nAir refraction indexes
 						// Calculate cos(Beta) where nAir*sin(beta)=nWater*sin(alpha=angle_from_normal)
 						float cos_beta_squared = 1 - pow(n, 2) * pow(sin(angle_from_normal), 2);
 						float transmitance = 0.01;
@@ -159,9 +160,15 @@ Shader "Unlit/OceanUnlitShader"
 						transmitance = saturate(transmitance);
 
 						// Surface texture sampling
+						fixed4 wave_col = tex2D(_OceanTex, _Time*0.1f + oceanPos * 0.02f);
 
 
-						fixed4 transmitted_color = lerp(_OceanShallowColor, col, transmitance);
+						fixed4 ocean_color = col;
+						if (wave_col.r > 0.3) ocean_color = _OceanShallowColor;
+						if (wave_col.r > 0.4) ocean_color = fixed4(1, 1, 1, 0);
+						
+						// Calculate color based on transmitance
+						fixed4 transmitted_color = lerp(_OceanShallowColor, ocean_color, transmitance);
 
 						// Superimpose fog
 						float fog_var = saturate(1.0 - (fog_end - underwater_depth) / (fog_end - fog_start));
