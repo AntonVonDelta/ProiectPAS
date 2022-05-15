@@ -118,6 +118,8 @@ Shader "Unlit/OceanUnlitShader"
 							// This checks if the object sampled is outside the water/above surface
 							if (underwater_depth < 0) return col;
 
+							if (_OceanSurface - worldPixelPos.y < 0.01f) return fixed4(1,1,1,0);
+
 							// Superimpose fog
 							fog_start = 0;
 							fog_end = 20;
