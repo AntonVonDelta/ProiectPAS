@@ -8,6 +8,12 @@ Shader "Unlit/OceanUnlitShader"
 		_OceanDeepColor("Ocean deep color", Color) = (0, 0.486,0.905,0)
 		_OceanShallowColor("Ocean shallow color", Color) = (0, 0.686,0.905,0)
 
+		_OceanUVScale("Ocean UV Scale", float) = 0.02
+		_OceanWaveSpeed("Ocean wave speed", float) = 0.2
+
+		_WaveNoiseScale("Wave Noise scale", float) = 1
+		_WaveNoiseFrequency("Wave Noise frequency", float) = 1
+		_WaveNoiseSpeed("Wave Noise Speed", float) = 1
 
 		_NoiseScale("Noise scale", float) = 1
 		_NoiseFrequency("Noise frequency", float) = 1
@@ -42,6 +48,9 @@ Shader "Unlit/OceanUnlitShader"
 				sampler2D _OceanTex;
 				float _OceanSurface;
 				fixed4 _OceanDeepColor, _OceanShallowColor;
+				float _OceanUVScale, _OceanWaveSpeed;
+				float _WaveNoiseScale, _WaveNoiseFrequency, _WaveNoiseSpeed;
+
 				float _NoiseScale, _NoiseFrequency, _NoiseSpeed, _PixelOffset;
 
 				// From the docs I can see this will be automatically populated with the depth texture
@@ -160,11 +169,22 @@ Shader "Unlit/OceanUnlitShader"
 						transmitance = saturate(transmitance);
 
 						// Surface texture sampling
-						fixed4 wave_col = tex2D(_OceanTex, _Time*0.1f + oceanPos * 0.02f);
+						float3 time_spos = float3(1, 1, 0) * _WaveNoiseFrequency;
+						time_spos.z += _Time.x * _WaveNoiseSpeed;
+						float time_noise = _WaveNoiseScale * ((snoise(time_spos * _WaveNoiseFrequency) + 1) / 2);
+						float2 time_noiseDirection = normalize(float2(cos(time_noise * M_PI * 2), sin(time_noise * M_PI * 2)));
 
+						float2 oceanTexUV = (time_noiseDirection * _Time.x * _OceanWaveSpeed + oceanPos * _OceanUVScale)/10*underwater_depth;
+						// https://www.youtube.com/watch?v=yXu55U_rRLw
+						float3 spos = float3(oceanTexUV.x, oceanTexUV.y, 0) * _NoiseFrequency;
+						spos.z += _Time.x * _NoiseSpeed;
+						float noise = _NoiseScale * ((snoise(spos) + 1) / 2);
+						float2 noiseDirection = float2(cos(noise * M_PI * 2), sin(noise * M_PI * 2));
+						float2 pixelUVCoords = oceanTexUV + normalize(noiseDirection) * _PixelOffset;
+						fixed4 wave_col = tex2D(_OceanTex, pixelUVCoords);
 
 						fixed4 ocean_color = col;
-						if (wave_col.r > 0.3) ocean_color = _OceanShallowColor;
+						if (wave_col.r > 0.2) ocean_color = _OceanShallowColor;
 						if (wave_col.r > 0.4) ocean_color = fixed4(1, 1, 1, 0);
 						
 						// Calculate color based on transmitance
