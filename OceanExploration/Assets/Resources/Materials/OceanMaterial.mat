@@ -101,7 +101,7 @@ Material:
     - _OcclusionStrength: 1
     - _OceanSurface: 20
     - _OceanUVScale: 0.06
-    - _OceanWaveSpeed: 0.04
+    - _OceanWaveSpeed: 1.72
     - _Parallax: 0.005
     - _PixelOffset: 0.01
     - _QueueOffset: 0

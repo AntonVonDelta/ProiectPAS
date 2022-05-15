@@ -76,7 +76,7 @@ Shader "Unlit/OceanUnlitShader"
 				float noiseAtUV(float2 uv, float frequency, float speed) {
 					float3 spos = float3(uv.x, uv.y, 0) * frequency;
 					spos.z += _Time.x * speed;
-					float noise = _NoiseScale * ((snoise(spos) + 1) / 2);
+					float noise = 1 * ((snoise(spos) + 1) / 2);
 					return noise;
 				}
 				float2 valueToDirection(float val) {
@@ -152,8 +152,8 @@ Shader "Unlit/OceanUnlitShader"
 
 								float2 oceanTexUV = texture1DMovement(oceanPos, 3, 1);
 								float noise = noiseAtUV(oceanTexUV, 3.0f, 20.0f);
-								float cutoff = lerp();
-								if (noise >0.9f) {
+								float cutoff = lerp(0.2f, 1, distance * 10);
+								if (noise > cutoff) {
 									return fixed4(1,1,1,0);
 								}
 
