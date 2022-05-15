@@ -73,14 +73,16 @@ Shader "Unlit/OceanUnlitShader"
 					return viewSpaceRay * Linear01Depth(rawDepth);
 				}
 
-				float2 noiseAtUV(float2 uv, float frequency, float speed) {
+				float noiseAtUV(float2 uv, float frequency, float speed) {
 					float3 spos = float3(uv.x, uv.y, 0) * frequency;
 					spos.z += _Time.x * speed;
 					float noise = _NoiseScale * ((snoise(spos) + 1) / 2);
-					float2 noiseDirection = float2(cos(noise * M_PI * 2), sin(noise * M_PI * 2));
-					return normalize(noiseDirection);
+					return noise;
 				}
-
+				float2 valueToDirection(float val) {
+					float2 direction = float2(cos(val * M_PI * 2), sin(val * M_PI * 2));
+					return normalize(direction);
+				}
 
 				float2 texture1DMovement(float2 uv, float speed, float scale) {
 					float2 time_offset = _Time.x * speed;
@@ -133,7 +135,29 @@ Shader "Unlit/OceanUnlitShader"
 							// This checks if the object sampled is outside the water/above surface
 							if (underwater_depth < 0) return col;
 
-							if (_OceanSurface - worldPixelPos.y < 0.01f) return fixed4(1,1,1,0);
+							// Create white foam around objects near to the surface
+							if (_OceanSurface - worldPixelPos.y < 0.1f) {
+								float distance = _OceanSurface - worldPixelPos.y;
+								float3 worldDir = normalize(worldPixelPos);
+
+								if (worldDir.y == 0) worldDir.y = 0.0001;
+								// Make the y component to be of size 1
+								worldDir = mul(worldDir, 1.0f / worldDir.y);
+								// Multiply the "unit" y axis by the distance to the surface.
+								// This will also extend the other components
+								worldDir = mul(worldDir, _OceanSurface);
+
+								// Pixel position on ocean surface
+								float2 oceanPos = worldDir.xz;
+
+								float2 oceanTexUV = texture1DMovement(oceanPos, 3, 1);
+								float noise = noiseAtUV(oceanTexUV, 3.0f, 20.0f);
+								float cutoff = lerp();
+								if (noise >0.9f) {
+									return fixed4(1,1,1,0);
+								}
+
+							}
 
 							// Superimpose fog
 							fog_start = 0;
@@ -191,16 +215,8 @@ Shader "Unlit/OceanUnlitShader"
 						float2 oceanTexUV = texture1DMovement(oceanPos, _OceanWaveSpeed, 0.01f + _OceanUVScale / 5 * underwater_depth);
 						float2 oceanTexOppositeUV = texture1DMovement(oceanPos, -_OceanWaveSpeed, _OceanUVScale / 20 * underwater_depth);
 
-						float2 noiseDirection = noiseAtUV(oceanTexUV, _NoiseFrequency, _NoiseSpeed);
+						float2 noiseDirection = valueToDirection(noiseAtUV(oceanTexUV, _NoiseFrequency, _NoiseSpeed));
 						float2 pixelUVCoords = oceanTexUV + noiseDirection * _PixelOffset;
-
-						//float2 oceanTexUV = time_noiseDirection * _Time.x * _OceanWaveSpeed + (oceanPos * _OceanUVScale)/10*underwater_depth;
-						//// https://www.youtube.com/watch?v=yXu55U_rRLw
-						//float3 spos = float3(oceanTexUV.x, oceanTexUV.y, 0) * _NoiseFrequency;
-						//spos.z += _Time.x * _NoiseSpeed;
-						//float noise = _NoiseScale * ((snoise(spos) + 1) / 2);
-						//float2 noiseDirection = float2(cos(noise * M_PI * 2), sin(noise * M_PI * 2));
-						//float2 pixelUVCoords = oceanTexUV + normalize(noiseDirection) * _PixelOffset;
 
 						fixed4 wave_col1 = tex2D(_OceanTex, pixelUVCoords);
 						fixed4 wave_col2 = tex2D(_OceanTex, oceanTexOppositeUV);
