@@ -177,7 +177,7 @@ Shader "Unlit/OceanUnlitShader"
 						float n = 1.3f;		// nWater/nAir refraction indexes
 						// Calculate cos(Beta) where nAir*sin(beta)=nWater*sin(alpha=angle_from_normal)
 						float cos_beta_squared = 1 - pow(n, 2) * pow(sin(angle_from_normal), 2);
-						float transmitance = 0.07;
+						float transmitance = 0.07;	// Have minimum sky lighting in the distance. Full opaque not realistic
 						if (cos_beta_squared >= 0) transmitance += sqrt(cos_beta_squared);
 						transmitance = saturate(transmitance);
 
@@ -188,7 +188,9 @@ Shader "Unlit/OceanUnlitShader"
 						float2 time_noiseDirection = normalize(float2(cos(time_noise * M_PI * 2), sin(time_noise * M_PI * 2)));
 
 
-						float2 oceanTexUV = texture1DMovement(oceanPos, _OceanWaveSpeed, _OceanUVScale);
+						float2 oceanTexUV = texture1DMovement(oceanPos, _OceanWaveSpeed, 0.01f + _OceanUVScale / 5 * underwater_depth);
+						float2 oceanTexOppositeUV = texture1DMovement(oceanPos, -_OceanWaveSpeed, _OceanUVScale / 20 * underwater_depth);
+
 						float2 noiseDirection = noiseAtUV(oceanTexUV, _NoiseFrequency, _NoiseSpeed);
 						float2 pixelUVCoords = oceanTexUV + noiseDirection * _PixelOffset;
 
@@ -200,8 +202,11 @@ Shader "Unlit/OceanUnlitShader"
 						//float2 noiseDirection = float2(cos(noise * M_PI * 2), sin(noise * M_PI * 2));
 						//float2 pixelUVCoords = oceanTexUV + normalize(noiseDirection) * _PixelOffset;
 
-						fixed4 wave_col = tex2D(_OceanTex, pixelUVCoords);
+						fixed4 wave_col1 = tex2D(_OceanTex, pixelUVCoords);
+						fixed4 wave_col2 = tex2D(_OceanTex, oceanTexOppositeUV);
+						fixed4 wave_col = (wave_col1 + wave_col2) / 2;
 
+						// Apply waves texture to surface
 						fixed4 ocean_color = col;
 						if (wave_col.r > 0.2) ocean_color = _OceanShallowColor;
 						if (wave_col.r > 0.4) ocean_color = fixed4(1, 1, 1, 0);
