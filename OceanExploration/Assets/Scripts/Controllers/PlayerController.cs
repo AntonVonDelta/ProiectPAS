@@ -87,13 +87,14 @@ public class PlayerController : MonoBehaviour {
         // Apply force to keep vehicle underwater
         if (transform.position.y >= oceanSurface) {
             // Do not go above water
-            Vector3 downDirection = transform.InverseTransformDirection(Vector3.down) * 0.6f * moveMultiplier * moveForceMagnitude;
+            Vector3 downDirection = transform.InverseTransformDirection(Vector3.down) * Mathf.Lerp(1f / 2, 1, (transform.position.y - oceanSurface) / 4) * moveMultiplier * moveForceMagnitude;
             rb.AddForce(downDirection);
         }
 
         // Rotate from keyboard
         transform.Rotate(Vector3.up, Input.GetAxis("Horizontal") * rotateAmount, Space.World);
     }
+
 
     private void OnDrawGizmos() {
         Gizmos.color = Color.red;
