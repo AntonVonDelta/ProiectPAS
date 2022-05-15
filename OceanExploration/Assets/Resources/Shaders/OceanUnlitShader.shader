@@ -156,7 +156,6 @@ Shader "Unlit/OceanUnlitShader"
 								if (noise > cutoff) {
 									return fixed4(1,1,1,0);
 								}
-
 							}
 
 							// Superimpose fog
@@ -206,12 +205,6 @@ Shader "Unlit/OceanUnlitShader"
 						transmitance = saturate(transmitance);
 
 						// Surface texture sampling
-						float3 time_spos = float3(1, 1, 0) * _WaveNoiseFrequency;
-						time_spos.z += _Time.x * _WaveNoiseSpeed;
-						float time_noise = _WaveNoiseScale * ((snoise(time_spos * _WaveNoiseFrequency) + 1) / 2);
-						float2 time_noiseDirection = normalize(float2(cos(time_noise * M_PI * 2), sin(time_noise * M_PI * 2)));
-
-
 						float2 oceanTexUV = texture1DMovement(oceanPos, _OceanWaveSpeed, 0.01f + _OceanUVScale / 5 * underwater_depth);
 						float2 oceanTexOppositeUV = texture1DMovement(oceanPos, -_OceanWaveSpeed, _OceanUVScale / 20 * underwater_depth);
 
