@@ -87,7 +87,7 @@ public class PlayerController : MonoBehaviour {
         // Apply force to keep vehicle underwater
         if (transform.position.y >= oceanSurface) {
             // Do not go above water
-            Vector3 downDirection = transform.InverseTransformDirection(Vector3.down) * 1 / 2 * moveMultiplier * moveForceMagnitude;
+            Vector3 downDirection = transform.InverseTransformDirection(Vector3.down) * 0.6f * moveMultiplier * moveForceMagnitude;
             rb.AddForce(downDirection);
         }
 

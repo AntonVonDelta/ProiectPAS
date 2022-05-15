@@ -161,10 +161,10 @@ Shader "Unlit/OceanUnlitShader"
 						float angle_from_normal = M_PI / 2 - horizontal_angle;
 
 						// Apply refraction in order to reduce light further from camera with larger angles from the normal
-						float n = 1.2f;		// nWater/nAir refraction indexes
+						float n = 1.3f;		// nWater/nAir refraction indexes
 						// Calculate cos(Beta) where nAir*sin(beta)=nWater*sin(alpha=angle_from_normal)
 						float cos_beta_squared = 1 - pow(n, 2) * pow(sin(angle_from_normal), 2);
-						float transmitance = 0.01;
+						float transmitance = 0.07;
 						if (cos_beta_squared >= 0) transmitance += sqrt(cos_beta_squared);
 						transmitance = saturate(transmitance);
 

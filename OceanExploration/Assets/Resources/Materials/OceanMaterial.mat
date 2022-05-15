@@ -100,6 +100,8 @@ Material:
     - _NoiseSpeed: 9.8
     - _OcclusionStrength: 1
     - _OceanSurface: 20
+    - _OceanUVScale: 0.06
+    - _OceanWaveSpeed: 0.01
     - _Parallax: 0.005
     - _PixelOffset: 0.01
     - _QueueOffset: 0
@@ -109,6 +111,9 @@ Material:
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _Surface: 0
+    - _WaveNoiseFrequency: 1
+    - _WaveNoiseScale: 1
+    - _WaveNoiseSpeed: 1
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:
@@ -116,7 +121,7 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _OceanDeepColor: {r: 0, g: 0.33396223, b: 0.5566038, a: 0}
-    - _OceanShallowColor: {r: 0.21226418, g: 0.62352943, b: 0.99607843, a: 1}
+    - _OceanShallowColor: {r: 0.24705882, g: 0.58431375, b: 0.96862745, a: 1}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
   m_BuildTextureStacks: []
 --- !u!114 &6487039028257285066
