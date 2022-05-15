@@ -82,17 +82,13 @@ Shader "Unlit/OceanUnlitShader"
 				}
 
 				fixed4 frag(v2f i) : SV_Target{
-					//fixed4 depth_col = tex2D(_CameraDepthTexture, i.uv);
-					//return col+ depth_col;
-
 					// Sample the color texture
 					fixed4 col = tex2D(_MainTex, i.uv);
 
 					// Get view direction and position
 					// This is the pixel direction in the view space meaning the magnitude of the
-					// vector is between 0 and far plane. Not a proper space because there's no center
-					// but all rays on the near plane got a 0 Z value
-					// All values are withing the camera frustum
+					// vector is between 0 and far plane. All 0 Z values are at the center of camera and not on the near plant
+					// Not quite the distance to the object. Read https://forum.unity.com/threads/understanding-worldspaceviewdir-incorrect-weird-values.1272374/#post-8128955
 					float3 viewPixelPos = viewSpacePosAtScreenUV(i.uv);
 					// This is the pixel direction but in world space. This is invariant to camera position
 					float3 worldPixelPos = mul(unity_CameraToWorld, float4(viewPixelPos.xy, -viewPixelPos.z, 1.0)).xyz;
@@ -102,7 +98,7 @@ Shader "Unlit/OceanUnlitShader"
 					// God response: https://answers.unity.com/questions/877170/render-scene-depth-to-a-texture.html
 					float logarithmic_depth = UNITY_SAMPLE_DEPTH(tex2D(_CameraDepthTexture, i.uv));
 					float depth = Linear01Depth(logarithmic_depth);
-					float worldDepth = -viewPixelPos.z;	// Almost real z value away from camera. Z=0 means near plane
+					float worldDepth = -viewPixelPos.z;	// Not quite z value away from camera. Z=0 means camera center
 					float3 dir = normalize(localCameraPixelPos);
 
 					// Constants
@@ -124,9 +120,9 @@ Shader "Unlit/OceanUnlitShader"
 
 							// Superimpose fog
 							fog_start = 0;
-							fog_end = 10;
+							fog_end = 20;
 							float fog_var = saturate(1.0 - (fog_end - underwater_depth) / (fog_end - fog_start));
-							fixed4 fog_color = lerp(_OceanShallowColor, _OceanDeepColor, fog_var);
+							fixed4 fog_color = lerp( _OceanShallowColor, _OceanDeepColor, fog_var);
 
 							return fog_color;
 						}
