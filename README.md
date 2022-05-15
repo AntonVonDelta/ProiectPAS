@@ -35,6 +35,8 @@
 
 # Imagini
 
+![image](https://user-images.githubusercontent.com/25268629/168495414-c2d4b825-f7c2-4258-9393-91fd24eea9aa.png)  ![image](https://user-images.githubusercontent.com/25268629/168495444-d6880265-2807-419e-aa6a-04dde61adc6a.png)
+
 ![image](https://user-images.githubusercontent.com/25268629/168335669-b891dfb3-75a2-4894-af01-5939ea8b960f.png)
 
 ![image](https://user-images.githubusercontent.com/25268629/168335432-8a594758-c055-4536-b90d-d0ec73a72dfd.png)
