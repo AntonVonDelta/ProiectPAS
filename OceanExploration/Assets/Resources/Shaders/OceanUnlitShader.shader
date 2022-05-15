@@ -15,7 +15,6 @@ Shader "Unlit/OceanUnlitShader"
 		_WaveNoiseFrequency("Wave Noise frequency", float) = 1
 		_WaveNoiseSpeed("Wave Noise Speed", float) = 1
 
-		_NoiseScale("Noise scale", float) = 1
 		_NoiseFrequency("Noise frequency", float) = 1
 		_NoiseSpeed("Noise Speed", float) = 1
 		_PixelOffset("Pixel Offset", float) = 0.005
@@ -51,7 +50,7 @@ Shader "Unlit/OceanUnlitShader"
 				float _OceanUVScale, _OceanWaveSpeed;
 				float _WaveNoiseScale, _WaveNoiseFrequency, _WaveNoiseSpeed;
 
-				float _NoiseScale, _NoiseFrequency, _NoiseSpeed, _PixelOffset;
+				float _NoiseFrequency, _NoiseSpeed, _PixelOffset;
 
 				// From the docs I can see this will be automatically populated with the depth texture
 				// BUT remeber to tell it to do so...in UniversalRenderPipelineAsset check the Depth Texture in General
@@ -150,9 +149,9 @@ Shader "Unlit/OceanUnlitShader"
 								// Pixel position on ocean surface
 								float2 oceanPos = worldDir.xz;
 
-								float2 oceanTexUV = texture1DMovement(oceanPos, 3, 1);
-								float noise = noiseAtUV(oceanTexUV, 3.0f, 20.0f);
-								float cutoff = lerp(0.2f, 1, distance * 10);
+								float2 oceanTexUV = texture1DMovement(oceanPos, 2, 0.5f);
+								float noise = noiseAtUV(oceanTexUV, 5.0f, 10.0f);
+								float cutoff = lerp(0.2f, 1, distance * 12);
 								if (noise > cutoff) {
 									return fixed4(1,1,1,0);
 								}
@@ -204,7 +203,7 @@ Shader "Unlit/OceanUnlitShader"
 						if (cos_beta_squared >= 0) transmitance += sqrt(cos_beta_squared);
 						transmitance = saturate(transmitance);
 
-						// Surface texture sampling
+						// Surface texture sampling...sample in two directions for two wavefronts merging
 						float2 oceanTexUV = texture1DMovement(oceanPos, _OceanWaveSpeed, 0.01f + _OceanUVScale / 5 * underwater_depth);
 						float2 oceanTexOppositeUV = texture1DMovement(oceanPos, -_OceanWaveSpeed, _OceanUVScale / 20 * underwater_depth);
 
