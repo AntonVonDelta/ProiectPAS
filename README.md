@@ -29,6 +29,7 @@
     - spuma
     - valuri realiste
     - animatii randomizate in timp cu perlin noise
+    - texture sampling
   - Chunk Generator
     - genereaza chunkuri dupa datele returnate de Marching Cubes
     - caching
