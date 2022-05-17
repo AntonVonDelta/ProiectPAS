@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class TreasureController : MonoBehaviour {
+    private bool startAnimation = false;
+
     // Start is called before the first frame update
     void Start() {
 
@@ -10,10 +12,12 @@ public class TreasureController : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
+        if (startAnimation) {
 
+        }
     }
 
     private void OnTriggerEnter(Collider other) {
-        Debug.Log("trigger");
+        startAnimation = true;
     }
 }
