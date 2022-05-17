@@ -5655,6 +5655,8 @@ MonoBehaviour:
   plantPrefab: {fileID: 4193468509239237828, guid: 80ffa03657e3e1049ad00c1523757ca7, type: 3}
   plantsPerChunk: 2
   plantsLoadingRadius: 3
+  treasurePrefab: {fileID: 1000011713842796, guid: ffd3e66d4df2a554fb995d41f7ffe4c2, type: 3}
+  treasuresPerChunk: 0.8
 --- !u!4 &655421686 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4000010454786744, guid: c9c10e442362b304fa498afd8bec3b1c, type: 3}
