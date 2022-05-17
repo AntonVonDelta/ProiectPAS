@@ -217,10 +217,6 @@ public class ChunkGenerator : MonoBehaviour {
                     if (hit.collider.gameObject.CompareTag("Player")) continue;
 
                     GameObject obj = Instantiate(treasurePrefab, hit.point, Quaternion.Euler(-90, 0, 0));
-                    Color color=obj.GetComponent<Renderer>().material.color;
-                    color.a = 0.5f;
-                    obj.GetComponent<Renderer>().material.color = color;
-
                     result.Add(obj);
                     break;
                 }
