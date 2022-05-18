@@ -31,10 +31,16 @@ public class ChunkGenerator : MonoBehaviour {
     public int plantsPerChunk = 2;
     public int plantsLoadingRadius = 1;
 
+    [Header("Treasures generation params")]
+    public GameObject treasurePrefab;
+    public float treasuresPerChunk = 0.8f;
+
+
     struct Chunk {
         public GameObject chunkObject;
         public Vector3Int gridIndex;
         public List<GameObject> plants;
+        public List<GameObject> treasures;
     };
     private Stack<GameObject> cachedObjects = new Stack<GameObject>();
     private List<Chunk> loadedChunks = new List<Chunk>();
@@ -132,13 +138,17 @@ public class ChunkGenerator : MonoBehaviour {
                     if ((tempChunkWorldPos - transformWithoutYAxis).magnitude <= plantsLoadingRadius * chunkSize) {
                         if (searchedChunk.plants == null) {
                             searchedChunk.plants = GeneratePlants(tempChunkWorldPos);
+                            searchedChunk.treasures = GenerateTreasures(tempChunkWorldPos);
                             loadedChunks[searchedChunkIndex] = searchedChunk;
                         }
                     } else {
                         // Destroy all plants
                         if (searchedChunk.plants != null) {
                             foreach (GameObject plant in searchedChunk.plants) Destroy(plant);
+                            foreach (GameObject treasure in searchedChunk.treasures) Destroy(treasure);
+
                             searchedChunk.plants = null;
+                            searchedChunk.treasures = null;
                         }
                     }
                 }
@@ -167,7 +177,7 @@ public class ChunkGenerator : MonoBehaviour {
             rayOrigin.y = heightSize;
 
             // Redo the calculation a few times in case it misses in the first try
-            for(int j = 0; j < 3; j++) {
+            for (int j = 0; j < 3; j++) {
                 // Calculate a random down vector
                 Vector3 downRandomVector = Random.insideUnitSphere.normalized;
                 downRandomVector.y = -1;
@@ -178,6 +188,35 @@ public class ChunkGenerator : MonoBehaviour {
                     if (hit.collider.gameObject.CompareTag("Player")) continue;
 
                     GameObject obj = Instantiate(plantPrefab, hit.point, Quaternion.identity);
+                    result.Add(obj);
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    private List<GameObject> GenerateTreasures(Vector3 gridPosition) {
+        List<GameObject> result = new List<GameObject>();
+        if (Random.value < treasuresPerChunk) {
+            Vector3 rayOrigin = gridPosition;
+            RaycastHit hit;
+            rayOrigin.x += Random.value * chunkSize;
+            rayOrigin.z += Random.value * chunkSize;
+            rayOrigin.y = heightSize;
+
+            // Redo the calculation a few times in case it misses in the first try
+            for (int j = 0; j < 3; j++) {
+                // Calculate a random down vector
+                Vector3 downRandomVector = Random.insideUnitSphere.normalized;
+                downRandomVector.y = -1;
+                downRandomVector.Normalize();
+
+                // Ignore isTrigger collider because all the plants got one around them
+                if (Physics.Raycast(rayOrigin, downRandomVector, out hit, heightSize, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)) {
+                    if (hit.collider.gameObject.CompareTag("Player")) continue;
+
+                    GameObject obj = Instantiate(treasurePrefab, hit.point, Quaternion.Euler(-90, 0, 0));
                     result.Add(obj);
                     break;
                 }
