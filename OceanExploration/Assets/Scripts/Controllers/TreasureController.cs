@@ -4,14 +4,13 @@ using UnityEngine;
 
 public class TreasureController : MonoBehaviour {
     private int startAnimation = 0;
-    public float rotationSpeed = 360.0f;
     public float scalingSpeed = -1f;
     public float minimumSize = 0.5f;
 
     public float rotationDuration = 3;
     public float rotationStartValue = 0;
     public float rotationEndValue = 360;
-    float animatedRotation=0;
+    float animatedRotation = 0;
 
     // Start is called before the first frame update
     void Start() {
@@ -26,7 +25,7 @@ public class TreasureController : MonoBehaviour {
         }
         if (startAnimation == 2) {
             Vector3 localUp = transform.InverseTransformDirection(Vector3.up);
-            transform.Rotate(localUp, animatedRotation);
+            transform.rotation = Quaternion.Euler(-90, animatedRotation, 0);
 
             Vector3 scale = transform.localScale;
             scale += Vector3.one * scalingSpeed * Time.deltaTime;
@@ -42,7 +41,10 @@ public class TreasureController : MonoBehaviour {
         float timeElapsed = 0;
 
         while (timeElapsed < rotationDuration) {
-            animatedRotation = Mathf.Lerp(rotationStartValue, rotationEndValue, timeElapsed / rotationDuration);
+            float t = timeElapsed / rotationDuration;
+            t = Mathf.Sqrt(t);
+
+            animatedRotation = Mathf.Lerp(rotationStartValue, rotationEndValue, t);
             timeElapsed += Time.deltaTime;
             yield return null;
         }
