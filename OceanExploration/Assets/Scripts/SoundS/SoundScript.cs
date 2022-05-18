@@ -8,6 +8,10 @@ public class SoundScript : MonoBehaviour {
 
     public AudioMixer audioMixer;
 
+    private void Start() {
+        audioMixer.SetFloat(MasterVolume, 20 * Mathf.Log10(1));
+    }
+
     public void SetVolume(float volume) {
         audioMixer.SetFloat(MasterVolume, 20 * Mathf.Log10(volume));
     }
