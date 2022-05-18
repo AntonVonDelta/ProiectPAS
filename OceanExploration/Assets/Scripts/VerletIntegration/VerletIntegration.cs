@@ -100,6 +100,11 @@ public class VerletIntegration : MonoBehaviour {
     }
 
     void Update() {
+        Vector3 rootPoint = transform.position;
+        Vector3 viewportPoint = Camera.main.WorldToViewportPoint(rootPoint);
+        if (!(viewportPoint.x>0 && viewportPoint.x<1 && viewportPoint.y>0 && viewportPoint.y<1)) return;
+        if (viewportPoint.z > 0) return;
+
         UpdatePoints();
 
         for (int i = 0; i < 5; i++) {

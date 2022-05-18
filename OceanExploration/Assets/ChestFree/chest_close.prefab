@@ -113,3 +113,4 @@ MonoBehaviour:
   rotationDuration: 3
   rotationStartValue: 0
   rotationEndValue: 720
+  translationSpeed: 1.5

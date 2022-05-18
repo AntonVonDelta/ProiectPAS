@@ -97,6 +97,9 @@ public class PlayerController : MonoBehaviour {
         transform.Rotate(Vector3.up, Input.GetAxis("Horizontal") * rotateAmount, Space.World);
     }
 
+    private void OnCollisionStay(Collision collision) {
+        rb.angularVelocity = Vector3.zero;
+    }
 
     private void OnDrawGizmos() {
         Gizmos.color = Color.red;

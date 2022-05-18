@@ -10,6 +10,8 @@ public class TreasureController : MonoBehaviour {
     public float rotationStartValue = 0;
     public float rotationEndValue = 360;
 
+    public float translationSpeed = 1.5f;
+
     private GameObject gameManager;
     private int startAnimation = 0;
     private float animatedRotation = 0;
@@ -32,10 +34,13 @@ public class TreasureController : MonoBehaviour {
             Vector3 scale = transform.localScale;
             scale += Vector3.one * scalingSpeed * Time.deltaTime;
             transform.localScale = scale;
-
             if (scale.magnitude < minimumSize) {
                 gameObject.SetActive(false);
             }
+
+            Vector3 pos = transform.position;
+            pos.y += translationSpeed * Time.deltaTime;
+            transform.position = pos;
         }
     }
 
