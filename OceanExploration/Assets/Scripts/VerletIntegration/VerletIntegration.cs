@@ -66,8 +66,17 @@ public class VerletIntegration : MonoBehaviour {
     private List<VerletPoint> simulationPoints = new List<VerletPoint>();
     private List<RigidLine> rigidLines = new List<RigidLine>();
     private List<BranchPointsInfo> branchPointsInterval;
+    private new BoxCollider collider;
+    private Camera mainCamera;
+    private Plane[] frustumPlanes;
 
     void Start() {
+        collider = GetComponent<BoxCollider>();
+
+        // Set up frustum and camera
+        mainCamera = Camera.main;
+        frustumPlanes = GeometryUtility.CalculateFrustumPlanes(mainCamera);
+
         PlantGenerator plant = new PlantGenerator(mainBranchPoints, maxBranchLevels, branchItemCountHalvingRatio,
             intraBranchPointsDistance, interBranchLinearDistanceFactor, distanceAwayFromParentBranch, branchingProbability,
             transform.position);
@@ -100,10 +109,8 @@ public class VerletIntegration : MonoBehaviour {
     }
 
     void Update() {
-        Vector3 rootPoint = transform.position;
-        Vector3 viewportPoint = Camera.main.WorldToViewportPoint(rootPoint);
-        if (!(viewportPoint.x>0 && viewportPoint.x<1 && viewportPoint.y>0 && viewportPoint.y<1)) return;
-        if (viewportPoint.z > 0) return;
+        frustumPlanes = GeometryUtility.CalculateFrustumPlanes(mainCamera);
+        if (collider.bounds.size.sqrMagnitude > 1 && !GeometryUtility.TestPlanesAABB(frustumPlanes, collider.bounds)) return;
 
         UpdatePoints();
 
@@ -248,7 +255,6 @@ public class VerletIntegration : MonoBehaviour {
     }
 
     private void RecalculateBounds() {
-        BoxCollider collider = GetComponent<BoxCollider>();
         Vector3 dimensionsMax = -1000 * Vector3.one;
         Vector3 dimensionsMin = 1000 * Vector3.one;
 

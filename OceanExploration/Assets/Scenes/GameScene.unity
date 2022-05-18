@@ -5559,7 +5559,7 @@ MonoBehaviour:
   threshold: 0.46
   perlinNoiseScale: 0.15
   plantPrefab: {fileID: 4193468509239237828, guid: 80ffa03657e3e1049ad00c1523757ca7, type: 3}
-  plantsPerChunk: 3
+  plantsPerChunk: 5
   plantsLoadingRadius: 3
   treasurePrefab: {fileID: 1000011713842796, guid: ffd3e66d4df2a554fb995d41f7ffe4c2, type: 3}
   treasuresPerChunk: 0.8
@@ -6416,7 +6416,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d395b14c108302b4cbf88d527d636bbc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  FPS: 50
+  FPS: 70
 --- !u!114 &963194230
 MonoBehaviour:
   m_ObjectHideFlags: 0
