@@ -109,6 +109,10 @@ public class VerletIntegration : MonoBehaviour {
     }
 
     void Update() {
+        Vector3 distance = transform.position - mainCamera.transform.position;
+        distance.y = 0; // Y position should not be used because bottom of the ocean is always further down
+        if ((transform.position - mainCamera.transform.position).sqrMagnitude > 1200) return;
+
         frustumPlanes = GeometryUtility.CalculateFrustumPlanes(mainCamera);
         if (collider.bounds.size.sqrMagnitude > 1 && !GeometryUtility.TestPlanesAABB(frustumPlanes, collider.bounds)) return;
 
