@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Audio;
 
 public class SoundScript : MonoBehaviour {
-    public const string MasterVolume = "MasterVolume";
+    public string MasterVolume = "MasterVolume";
 
     public AudioMixer audioMixer;
 

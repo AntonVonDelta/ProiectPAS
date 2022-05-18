@@ -3,18 +3,20 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class TreasureController : MonoBehaviour {
-    private int startAnimation = 0;
     public float scalingSpeed = -1f;
     public float minimumSize = 0.5f;
 
     public float rotationDuration = 3;
     public float rotationStartValue = 0;
     public float rotationEndValue = 360;
-    float animatedRotation = 0;
+
+    private GameObject gameManager;
+    private int startAnimation = 0;
+    private float animatedRotation = 0;
 
     // Start is called before the first frame update
     void Start() {
-
+        gameManager = GameObject.Find("GameManager");
     }
 
     // Update is called once per frame
@@ -52,6 +54,9 @@ public class TreasureController : MonoBehaviour {
     }
 
     private void OnTriggerEnter(Collider other) {
-        if (startAnimation == 0) startAnimation = 1;
+        if (startAnimation == 0) {
+            startAnimation = 1;
+            gameManager.GetComponent<GameController>().IncreaseScore();
+        }
     }
 }

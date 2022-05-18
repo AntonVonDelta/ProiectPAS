@@ -108,8 +108,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 501ed7e2179fa3642b119fb61dfa84af, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  scalingSpeed: -0.7
+  scalingSpeed: -1.3
   minimumSize: 0.5
   rotationDuration: 3
   rotationStartValue: 0
-  rotationEndValue: 360
+  rotationEndValue: 720
