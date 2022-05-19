@@ -14,6 +14,8 @@
  - Gurzu Antonio
  - Andronie Iustinian
 
+ **Demo:** [Gameplay + Presentation](Prezentare/Gameplay.mp4)
+ 
  # Features
   - Algoritm de Marching Cubes
     - pentru generarea randomizata a terenului
